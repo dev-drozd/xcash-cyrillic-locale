@@ -138,7 +138,12 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
-LOCALE_PATHS = [str(BASE_DIR / "locale")]
+LOCALE_PATHS = [
+    str(BASE_DIR / "locale"),
+    # 第三方后台组件（django-unfold）自身不带 locale，其界面文案的中文包由项目维护。
+    # 单独放一个目录：makemessages 只写 locale/，写进去会在下次生成时被标记废弃。
+    str(BASE_DIR / "locale_vendor"),
+]
 
 # DATABASES
 # ------------------------------------------------------------------------------

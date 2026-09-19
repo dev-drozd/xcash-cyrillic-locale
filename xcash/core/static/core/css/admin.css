@@ -1,0 +1,276 @@
+/*
+ * Xcash 后台补充样式。
+ *
+ * 背景：django-unfold 发布的是 Tailwind v4 的【预编译】产物，只包含它自己模板用到的
+ * 工具类。项目模板里自造的 Tailwind 类（bg-emerald-50 / divide-y / font-mono 等）
+ * 在这份 CSS 里根本不存在，写了也不会生效。因此：
+ *   1. 布局与配色一律复用 unfold 已编译的类（base / primary / red / green / orange / blue 色阶）；
+ *   2. 只有 unfold 确实没有、而后台又必须的少量能力，在这里按语义补齐。
+ *
+ * 取色一律走 unfold 暴露的 CSS 变量，跟随 UNFOLD["COLORS"] 与深色模式自动变化。
+ */
+
+/* ---------- 数字与哈希 ---------- */
+
+/* 金额、区块高度等数字列：等宽数字让同列小数点对齐，扫读更快。 */
+.xc-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* 地址、交易哈希：等宽字体 + 允许任意位置断行，避免撑破表格列宽。 */
+.xc-mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+/* 列表页里的哈希只给一行空间，超出用省略号，完整值交给 title 提示。 */
+.xc-mono-ellipsis {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  display: inline-block;
+  max-width: 13rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ---------- 行分隔 ---------- */
+
+/* unfold 没有 divide-y；看板与巡检页大量使用「同一张卡内多行列表」的结构。 */
+.xc-rows > * {
+  border-bottom: 1px solid var(--color-base-200);
+}
+
+.xc-rows > *:last-child {
+  border-bottom: 0;
+}
+
+.dark .xc-rows > * {
+  border-bottom-color: var(--color-base-800);
+}
+
+/* ---------- 指标卡 ---------- */
+
+/*
+ * 指标卡用左侧色条表达语义（中性 / 正向 / 提示 / 警告 / 危险），
+ * 而不是给整卡铺底色：铺底色在深色模式下极难同时保证对比度与克制。
+ */
+.xc-metric {
+  position: relative;
+  padding-left: 1.125rem;
+}
+
+.xc-metric::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.125rem;
+  left: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--color-base-300);
+}
+
+.dark .xc-metric::before {
+  background: var(--color-base-700);
+}
+
+.xc-metric-success::before {
+  background: var(--color-green-500);
+}
+
+.xc-metric-info::before {
+  background: var(--color-blue-500);
+}
+
+.xc-metric-primary::before {
+  background: var(--color-primary-500);
+}
+
+.xc-metric-warning::before {
+  background: var(--color-orange-500);
+}
+
+.xc-metric-danger::before {
+  background: var(--color-red-500);
+}
+
+/* 指标数值：字号、字重与等宽数字统一，避免各页面各写一套。 */
+.xc-metric-value {
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-font-important-light);
+}
+
+.dark .xc-metric-value {
+  color: var(--color-font-important-dark);
+}
+
+/* 指标数值随语义着色，用于「有风险时才变红」这类状态表达。 */
+.xc-value-success {
+  color: var(--color-green-700);
+}
+
+.dark .xc-value-success {
+  color: var(--color-green-400);
+}
+
+.xc-value-warning {
+  color: var(--color-orange-700);
+}
+
+.dark .xc-value-warning {
+  color: var(--color-orange-400);
+}
+
+.xc-value-danger {
+  color: var(--color-red-700);
+}
+
+.dark .xc-value-danger {
+  color: var(--color-red-400);
+}
+
+/* ---------- 图标徽章 ---------- */
+
+/* 卡片/行首的圆形图标底座，尺寸固定，避免 flex 容器把它压扁。 */
+.xc-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--color-base-100);
+  color: var(--color-base-500);
+}
+
+.dark .xc-icon-badge {
+  background: var(--color-base-800);
+  color: var(--color-base-400);
+}
+
+.xc-icon-badge .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.xc-icon-success {
+  background: var(--color-green-50);
+  color: var(--color-green-600);
+}
+
+.dark .xc-icon-success {
+  background: color-mix(in oklab, var(--color-green-500) 18%, transparent);
+  color: var(--color-green-400);
+}
+
+.xc-icon-info {
+  background: var(--color-blue-50);
+  color: var(--color-blue-500);
+}
+
+.dark .xc-icon-info {
+  background: color-mix(in oklab, var(--color-blue-500) 18%, transparent);
+  color: var(--color-blue-400);
+}
+
+.xc-icon-primary {
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+}
+
+.dark .xc-icon-primary {
+  background: color-mix(in oklab, var(--color-primary-500) 18%, transparent);
+  color: var(--color-primary-400);
+}
+
+.xc-icon-warning {
+  background: var(--color-orange-50);
+  color: var(--color-orange-600);
+}
+
+.dark .xc-icon-warning {
+  background: color-mix(in oklab, var(--color-orange-500) 18%, transparent);
+  color: var(--color-orange-400);
+}
+
+.xc-icon-danger {
+  background: var(--color-red-50);
+  color: var(--color-red-600);
+}
+
+.dark .xc-icon-danger {
+  background: color-mix(in oklab, var(--color-red-500) 18%, transparent);
+  color: var(--color-red-400);
+}
+
+/* ---------- 提示条 ---------- */
+
+/* 页面级说明/警示横幅：语义化左边框 + 浅底，深色模式下用半透明色避免刺眼。 */
+.xc-callout {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--border-radius, 6px);
+  border: 1px solid var(--color-base-200);
+  background: var(--color-base-50);
+  color: var(--color-base-700);
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+}
+
+.dark .xc-callout {
+  border-color: var(--color-base-800);
+  background: var(--color-base-900);
+  color: var(--color-base-300);
+}
+
+.xc-callout-warning {
+  border-color: var(--color-orange-200);
+  background: var(--color-orange-50);
+}
+
+.dark .xc-callout-warning {
+  border-color: color-mix(in oklab, var(--color-orange-500) 30%, transparent);
+  background: color-mix(in oklab, var(--color-orange-500) 12%, transparent);
+}
+
+.xc-callout-strong {
+  font-weight: 500;
+  color: var(--color-orange-700);
+}
+
+.dark .xc-callout-strong {
+  color: var(--color-orange-300);
+}
+
+/* ---------- 空态 ---------- */
+
+.xc-empty {
+  padding: 1.75rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-base-400);
+}
+
+/* ---------- 列表页微调 ---------- */
+
+/*
+ * 只读的长文本字段（payload / raw_response / last_error）在详情页会撑出横向滚动条。
+ * 统一限高并允许滚动，让页面主干保持可读。
+ */
+.xc-scroll-box {
+  max-height: 22rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

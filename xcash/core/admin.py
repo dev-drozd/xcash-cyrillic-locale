@@ -5,23 +5,143 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django_celery_results.models import GroupResult
 from django_celery_results.models import TaskResult
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
+from unfold.contrib.filters.admin import RangeDateTimeFilter
+from unfold.decorators import display
 
 from chains.models import AddressUsage
 from chains.models import Chain
 from chains.models import ChainType
+from common import admin_display as fmt
 from common.admin import ModelAdmin
+from common.admin import ReadOnlyModelAdmin
 from common.utils.math import format_decimal_stripped
 from core.models import SystemSettings
 from core.models import SystemWallet
 
+# django_celery_results 自带的 admin 是原生 django.contrib.admin.ModelAdmin，
+# 在 unfold 下拿不到筛选抽屉、标签等能力，统一换成项目基类重新注册。
 admin.site.unregister(TaskResult)
+admin.site.unregister(GroupResult)
+
+# Celery 任务状态取值来自 celery.states，非 Django choices，这里显式给配色。
+TASK_RESULT_STATUS_LABELS = {
+    "SUCCESS": "success",
+    "FAILURE": "danger",
+    "RETRY": "warning",
+    "REVOKED": "danger",
+    "STARTED": "info",
+    "PENDING": "",
+    "RECEIVED": "",
+}
 
 
 @admin.register(TaskResult)
-class TaskResultAdmin(ModelAdmin):
-    list_display = ("task_id", "task_name", "status", "date_done")
-    list_filter = ("status", "task_name", "date_done")
+class TaskResultAdmin(ReadOnlyModelAdmin):
+    date_hierarchy = "date_done"
+    ordering = ("-date_done",)
+    list_display = (
+        "display_identity",
+        "display_status",
+        "worker",
+        "date_created",
+        "date_done",
+    )
+    list_filter = (
+        ("status", ChoicesDropdownFilter),
+        "task_name",
+        "worker",
+        ("date_done", RangeDateTimeFilter),
+    )
+    search_fields = ("task_id", "task_name")
+    search_help_text = _("支持按任务 ID 或任务名搜索")
+    readonly_fields = (
+        "task_id",
+        "task_name",
+        "status",
+        "worker",
+        "date_created",
+        "date_done",
+        "display_args",
+        "display_kwargs",
+        "display_result",
+        "display_traceback",
+    )
+    fieldsets = (
+        (
+            _("任务"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "task_id",
+                    "task_name",
+                    "status",
+                    "worker",
+                    "date_created",
+                    "date_done",
+                ),
+            },
+        ),
+        (
+            _("入参"),
+            {
+                "classes": ("tab",),
+                "fields": ("display_args", "display_kwargs"),
+            },
+        ),
+        (
+            _("结果"),
+            {
+                "classes": ("tab",),
+                "fields": ("display_result", "display_traceback"),
+            },
+        ),
+    )
+
+    @display(description=_("任务"), ordering="task_name", header=True)
+    def display_identity(self, obj: TaskResult):
+        return (obj.task_name or fmt.EMPTY_VALUE, obj.task_id)
+
+    @display(
+        description=_("状态"),
+        ordering="status",
+        label=TASK_RESULT_STATUS_LABELS,
+    )
+    def display_status(self, obj: TaskResult):
+        return (obj.status, obj.status)
+
+    @display(description=_("位置参数"))
+    def display_args(self, obj: TaskResult):
+        return fmt.scroll_box(obj.task_args)
+
+    @display(description=_("关键字参数"))
+    def display_kwargs(self, obj: TaskResult):
+        return fmt.scroll_box(obj.task_kwargs)
+
+    @display(description=_("返回值"))
+    def display_result(self, obj: TaskResult):
+        return fmt.scroll_box(obj.result)
+
+    @display(description=_("异常堆栈"))
+    def display_traceback(self, obj: TaskResult):
+        return fmt.scroll_box(obj.traceback)
+
+
+@admin.register(GroupResult)
+class GroupResultAdmin(ReadOnlyModelAdmin):
+    date_hierarchy = "date_done"
+    ordering = ("-date_done",)
+    list_display = ("group_id", "date_created", "date_done")
+    search_fields = ("group_id",)
+    search_help_text = _("支持按任务组 ID 搜索")
+    readonly_fields = ("group_id", "date_created", "date_done", "display_result")
+    fields = readonly_fields
+
+    @display(description=_("结果"))
+    def display_result(self, obj: GroupResult):
+        return fmt.scroll_box(obj.result)
 
 
 @admin.register(SystemSettings)
@@ -29,35 +149,44 @@ class SystemSettingsAdmin(ModelAdmin):
     fieldsets = (
         (
             _("后台安全"),
-            {"fields": ("admin_session_timeout_minutes",)},
-        ),
-        (
-            _("Webhook 投递"),
             {
-                "fields": (
-                    "webhook_delivery_max_retries",
-                    "webhook_delivery_max_backoff_seconds",
-                )
+                "classes": ("tab",),
+                "fields": ("admin_session_timeout_minutes",),
             },
         ),
         (
-            _("异常巡检"),
-            {"fields": ("webhook_event_timeout_minutes",)},
+            _("Webhook"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "webhook_delivery_max_retries",
+                    "webhook_delivery_max_backoff_seconds",
+                    "webhook_event_timeout_minutes",
+                ),
+                "description": _(
+                    "重试次数与退避上限决定单个事件的最长投递周期；超时分钟数只影响异常巡检的判定口径。"
+                ),
+            },
         ),
         (
             "VaultSlot",
             {
+                "classes": ("tab",),
                 "fields": (
                     "evm_vault_slot_collect_delay_minutes",
                     "tron_vault_slot_collect_delay_minutes",
                     "vault_slot_collect_min_worth_usd",
                     "invoice_vault_slot_limit_per_project_chain",
-                )
+                ),
+                "description": _(
+                    "归集延迟用于把同一槽位的多次到账聚合成一笔交易；最小归集价值避免为尘埃余额支付 gas。"
+                ),
             },
         ),
         (
             _("AML 筛查"),
             {
+                "classes": ("tab",),
                 "fields": (
                     "aml_screening_enabled",
                     "aml_screening_threshold_usd",
@@ -65,18 +194,19 @@ class SystemSettingsAdmin(ModelAdmin):
                     "aml_screening_force_refresh_threshold_usd",
                     "misttrack_openapi_api_key",
                     "quicknode_misttrack_endpoint_url",
-                )
+                ),
             },
         ),
         (
             _("审计"),
             {
+                "classes": ("tab",),
                 "fields": (
                     "created_by",
                     "updated_by",
                     "created_at",
                     "updated_at",
-                )
+                ),
             },
         ),
     )

@@ -2,6 +2,9 @@ from django import forms
 from django.contrib import admin
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
+from unfold.contrib.filters.admin import RangeDateTimeFilter
+from unfold.contrib.filters.admin import RelatedDropdownFilter
 from unfold.decorators import display
 
 from chains.constants import ChainCode
@@ -11,17 +14,29 @@ from chains.models import ChainType
 from chains.models import DepositVaultSlot
 from chains.models import InvoiceVaultSlot
 from chains.models import Transfer
+from chains.models import TransferStatus
+from chains.models import TransferType
 from chains.models import TxTask
 from chains.models import TxTaskStatus
 from chains.models import VaultSlotBalance
 from chains.models import VaultSlotCollectSchedule
 from chains.models import VaultSlotUsage
 from chains.models import Wallet
+from common import admin_display as fmt
 from common.admin import ModelAdmin
 from common.admin import ReadOnlyModelAdmin
 from common.admin import TabularInline
 
 # Register your models here.
+
+# 上链任务状态在 TxTask / EvmTxTask / TronTxTask 三处后台展示，
+# 集中定义配色，避免同一状态在不同页面出现不同颜色。
+TX_TASK_STATUS_LABELS = {
+    TxTaskStatus.QUEUED: "warning",
+    TxTaskStatus.SUBMITTED: "info",
+    TxTaskStatus.SUCCEEDED: "success",
+    TxTaskStatus.FAILED: "danger",
+}
 
 
 class ChainAdminForm(forms.ModelForm):
@@ -37,16 +52,15 @@ class ChainAdmin(ModelAdmin):
     # 字段瘦身后，type / native_coin / confirm_block_count 已转为 property，
     # 通过 display 方法暴露到列表页，方便运维一眼看清链配置。
     list_display = (
-        "name_display",
-        "code_display",
+        "display_identity",
         "type",
         "environment_display",
-        "rpc_domain_display",
         "native_coin_display",
+        "rpc_domain_display",
+        "confirm_block_count_display",
+        "display_latest_block",
         "sort_order",
         "active",
-        "confirm_block_count_display",
-        "latest_block_number",
     )
     list_editable = (
         "sort_order",
@@ -54,14 +68,11 @@ class ChainAdmin(ModelAdmin):
     )
     list_filter = ("active", "is_testnet")
     search_fields = ("code",)
+    search_help_text = _("支持按链代码搜索")
 
-    @display(ordering="code", description=_("名称"))
-    def name_display(self, obj: Chain) -> str:
-        return obj.name
-
-    @display(ordering="code", description=_("代码"))
-    def code_display(self, obj: Chain) -> str:
-        return obj.code
+    @display(description=_("链"), ordering="code", header=True)
+    def display_identity(self, obj: Chain) -> tuple:
+        return (obj.name, obj.code)
 
     @display(description=_("原生币"))
     def native_coin_display(self, obj: Chain) -> str:
@@ -83,11 +94,15 @@ class ChainAdmin(ModelAdmin):
 
     @display(description=_("RPC 域名"))
     def rpc_domain_display(self, obj: Chain) -> str:
-        return obj.rpc_domain_name
+        return obj.rpc_domain_name or fmt.empty()
 
-    @display(description=_("区块确认数"))
+    @display(description=_("确认数"))
     def confirm_block_count_display(self, obj: Chain) -> int:
         return obj.confirm_block_count
+
+    @display(description=_("最新区块"), ordering="latest_block_number")
+    def display_latest_block(self, obj: Chain):
+        return fmt.number(obj.latest_block_number)
 
     base_fieldsets = (
         (
@@ -97,7 +112,10 @@ class ChainAdmin(ModelAdmin):
                     "code",
                     "sort_order",
                     "active",
-                )
+                ),
+                "description": _(
+                    "链类型、原生币与区块确认数由链代码对应的内置 spec 决定，不在后台维护。"
+                ),
             },
         ),
     )
@@ -135,69 +153,199 @@ class ChainAdmin(ModelAdmin):
 
 @admin.register(Wallet)
 class WalletAdmin(ReadOnlyModelAdmin):
-    list_display = ("__str__",)
+    # 助记词密文永远不进后台；这里只暴露钱包与其派生地址的对应关系。
+    list_display = ("__str__", "display_address_count")
+    fields = ("__str__",)
+
+    def get_queryset(self, request):
+        from django.db.models import Count
+
+        return super().get_queryset(request).annotate(address_total=Count("address"))
+
+    @display(description=_("派生地址数"), ordering="address_total")
+    def display_address_count(self, obj: Wallet):
+        return fmt.number(obj.address_total)
 
 
 @admin.register(Address)
 class AddressAdmin(ReadOnlyModelAdmin):
+    ordering = ("-created_at",)
+    list_select_related = ("wallet",)
     list_display = (
-        "address",
-        "usage",
+        "display_address",
+        "display_usage",
+        "chain_type",
+        "bip44_account",
+        "address_index",
+        "created_at",
     )
+    list_filter = (
+        ("usage", ChoicesDropdownFilter),
+        ("chain_type", ChoicesDropdownFilter),
+    )
+    search_fields = ("address",)
+    search_help_text = _("支持按地址搜索")
     readonly_fields = (
-        "address",
+        "display_full_address",
         "wallet",
         "usage",
         "chain_type",
         "bip44_account",
         "address_index",
+        "created_at",
     )
+    fields = readonly_fields
+
+    @display(description=_("地址"), ordering="address")
+    def display_address(self, obj: Address):
+        return fmt.truncated(obj.address)
+
+    @display(description=_("地址"))
+    def display_full_address(self, obj: Address):
+        return fmt.mono(obj.address)
+
+    @display(description=_("用途"), ordering="usage", label=True)
+    def display_usage(self, obj: Address):
+        return obj.get_usage_display()
 
 
 @admin.register(Transfer)
 class TransferAdmin(ReadOnlyModelAdmin):
-    search_fields = ("hash",)
-    readonly_fields = ("display_crypto", "display_chain")
+    date_hierarchy = "datetime"
+    ordering = ("-timestamp",)
+    list_select_related = ("chain", "crypto")
+    list_filter_sheet = False
+    search_fields = ("hash", "from_address", "to_address")
+    search_help_text = _("支持按交易哈希、付款地址或收款地址搜索")
+    list_filter = (
+        ("status", ChoicesDropdownFilter),
+        ("type", ChoicesDropdownFilter),
+        ("chain", RelatedDropdownFilter),
+        ("crypto", RelatedDropdownFilter),
+        ("datetime", RangeDateTimeFilter),
+    )
+    readonly_fields = (
+        "display_crypto",
+        "display_chain",
+        "display_full_hash",
+        "display_full_block_hash",
+        "display_from_address",
+        "display_to_address",
+        "display_amount",
+    )
 
     list_display = (
-        "from_address",
-        "to_address",
-        "chain",
-        "crypto",
-        "amount",
-        "datetime",
-        "type",
-        "display_status",
-    )
-
-    fields = (
-        "from_address",
-        "to_address",
+        "display_hash",
+        "display_route",
+        "display_amount",
         "display_chain",
-        "display_crypto",
-        "value",
-        "amount",
+        "display_type",
+        "display_status",
         "block",
-        "hash",
         "datetime",
-        "timestamp",
-        "type",
     )
 
-    @display(description=_("加密货币"))  # noqa
+    fieldsets = (
+        (
+            _("转账"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "display_full_hash",
+                    "display_chain",
+                    "display_crypto",
+                    "display_amount",
+                    "value",
+                    "type",
+                    "status",
+                    "confirm_mode",
+                ),
+            },
+        ),
+        (
+            _("收付双方"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "display_from_address",
+                    "display_to_address",
+                ),
+            },
+        ),
+        (
+            _("链上位置"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "block",
+                    "display_full_block_hash",
+                    "event_index",
+                    "datetime",
+                    "timestamp",
+                    "processed_at",
+                ),
+            },
+        ),
+    )
+
+    @display(description=_("交易哈希"), ordering="hash")
+    def display_hash(self, obj: Transfer):
+        return fmt.truncated(obj.hash)
+
+    @display(description=_("付款 → 收款"))
+    def display_route(self, obj: Transfer):
+        # 付款方与收款方成对阅读才有意义，合并成一列的两行，省掉一列横向空间。
+        return fmt.stacked(
+            fmt.truncated(obj.from_address),
+            fmt.truncated(obj.to_address),
+        )
+
+    @display(description=_("数量"), ordering="amount")
+    def display_amount(self, obj: Transfer):
+        return fmt.number(obj.amount, unit=obj.crypto.symbol)
+
+    @display(description=_("加密货币"))
     def display_crypto(self, obj: Transfer):
         return obj.crypto.symbol
 
-    @display(description=_("链"))  # noqa
+    @display(description=_("链"), ordering="chain__code")
     def display_chain(self, obj: Transfer):
         return obj.chain.name
 
+    @display(description=_("付款地址"))
+    def display_from_address(self, obj: Transfer):
+        return fmt.mono(obj.from_address)
+
+    @display(description=_("收款地址"))
+    def display_to_address(self, obj: Transfer):
+        return fmt.mono(obj.to_address)
+
+    @display(description=_("交易哈希"))
+    def display_full_hash(self, obj: Transfer):
+        return fmt.mono(obj.hash)
+
+    @display(description=_("区块哈希"))
+    def display_full_block_hash(self, obj: Transfer):
+        return fmt.mono(obj.block_hash)
+
+    @display(
+        description=_("归属"),
+        ordering="type",
+        label={
+            TransferType.Unmatched: "",
+            TransferType.Invoice: "primary",
+            TransferType.Deposit: "info",
+        },
+    )
+    def display_type(self, obj: Transfer):
+        return (obj.type, obj.get_type_display())
+
     @display(
         description=_("状态"),
+        ordering="status",
         label={
-            "confirming": "info",
-            "confirmed": "success",
-            "dropped": "",
+            TransferStatus.CONFIRMING: "info",
+            TransferStatus.CONFIRMED: "success",
         },
     )
     def display_status(self, instance: Transfer):
@@ -207,44 +355,62 @@ class TransferAdmin(ReadOnlyModelAdmin):
 @admin.register(TxTask)
 class TxTaskAdmin(ReadOnlyModelAdmin):
     # TxTask 是跨链统一锚点；后台只做观察与排障，禁止人工修改，避免写入非法的 status 状态。
+    date_hierarchy = "created_at"
     ordering = ("-created_at",)
     list_display = (
-        "display_sender",
-        "display_chain",
-        "display_tx_type",
         "display_tx_hash",
+        "display_tx_type",
+        "display_chain",
+        "display_sender",
         "display_status",
         "created_at",
+        "updated_at",
     )
-    list_filter = ("status", "tx_type", "chain")
+    list_filter = (
+        ("status", ChoicesDropdownFilter),
+        ("tx_type", ChoicesDropdownFilter),
+        ("chain", RelatedDropdownFilter),
+        ("created_at", RangeDateTimeFilter),
+    )
     list_select_related = ("sender", "chain")
     search_fields = ("tx_hash", "sender__address")
+    search_help_text = _("支持按交易哈希或发送地址搜索")
+    readonly_fields = (
+        "display_full_tx_hash",
+        "display_chain",
+        "display_full_sender",
+        "tx_type",
+        "status",
+        "created_at",
+        "updated_at",
+    )
+    fields = readonly_fields
 
-    @admin.display(ordering="sender__address", description=_("发送地址"))
+    @display(description=_("发送地址"), ordering="sender__address")
     def display_sender(self, obj: TxTask):
-        return obj.sender
+        return fmt.truncated(obj.sender.address)
 
-    @admin.display(ordering="chain__code", description=_("网络"))
+    @display(description=_("发送地址"))
+    def display_full_sender(self, obj: TxTask):
+        return fmt.mono(obj.sender.address)
+
+    @display(description=_("网络"), ordering="chain__code")
     def display_chain(self, obj: TxTask):
         return obj.chain
 
-    @admin.display(ordering="tx_type", description=_("类型"))
+    @display(description=_("类型"), ordering="tx_type", label=True)
     def display_tx_type(self, obj: TxTask):
         return obj.get_tx_type_display()
 
-    @admin.display(ordering="tx_hash", description=_("交易哈希"))
+    @display(description=_("交易哈希"), ordering="tx_hash")
     def display_tx_hash(self, obj: TxTask):
-        return obj.tx_hash or "—"
+        return fmt.truncated(obj.tx_hash)
 
-    @display(
-        description=_("状态"),
-        label={
-            TxTaskStatus.QUEUED: "warning",
-            TxTaskStatus.SUBMITTED: "warning",
-            TxTaskStatus.SUCCEEDED: "success",
-            TxTaskStatus.FAILED: "danger",
-        },
-    )
+    @display(description=_("交易哈希"))
+    def display_full_tx_hash(self, obj: TxTask):
+        return fmt.mono(obj.tx_hash)
+
+    @display(description=_("状态"), ordering="status", label=TX_TASK_STATUS_LABELS)
     def display_status(self, instance: TxTask):
         # TxTask.display_status 直接取单枚举 status 的展示文案，
         # 这里沿用同一来源避免后台与业务代码的展示口径漂移。
@@ -255,6 +421,12 @@ class VaultSlotCollectScheduleInline(TabularInline):
     model = VaultSlotCollectSchedule
     extra = 0
     can_delete = False
+    tab = True
+    show_count = True
+    show_title = False
+    per_page = 10
+    verbose_name = _("归集计划")
+    verbose_name_plural = _("归集计划")
     fields = ("crypto", "due_at", "tx_task", "created_at", "updated_at")
     readonly_fields = fields
     ordering = ("-due_at",)
@@ -270,14 +442,17 @@ class VaultSlotBalanceInline(TabularInline):
     model = VaultSlotBalance
     extra = 0
     can_delete = False
+    tab = True
+    show_count = True
+    show_title = False
+    verbose_name = _("余额快照")
+    verbose_name_plural = _("余额快照")
     fields = (
         "crypto",
         "amount",
         "worth",
-        "value",
         "synced_block_number",
         "synced_at",
-        "last_tx_hash",
         "updated_at",
     )
     readonly_fields = fields
@@ -291,20 +466,58 @@ class VaultSlotBalanceInline(TabularInline):
 
 class VaultSlotAdminBase(ReadOnlyModelAdmin):
     inlines = (VaultSlotBalanceInline, VaultSlotCollectScheduleInline)
-    list_filter = ("chain",)
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    list_filter = (
+        ("chain", RelatedDropdownFilter),
+        "is_deployed",
+        "has_received",
+        ("created_at", RangeDateTimeFilter),
+    )
     readonly_fields = (
         "project",
         "customer",
         "invoice_index",
         "chain",
-        "address",
-        "salt",
+        "display_full_address",
+        "display_salt",
         "deploy_tx_task",
         "is_deployed",
         "has_received",
         "created_at",
     )
     usage = None
+
+    @display(description=_("收款地址"), ordering="address")
+    def display_address(self, obj):
+        return fmt.truncated(obj.address)
+
+    @display(description=_("收款地址"))
+    def display_full_address(self, obj):
+        return fmt.mono(obj.address)
+
+    @display(description="CREATE2 Salt")
+    def display_salt(self, obj):
+        # salt 是 BinaryField，直接渲染会得到 memoryview 字面量，统一转成十六进制。
+        return fmt.mono(bytes(obj.salt).hex()) if obj.salt else fmt.empty()
+
+    @display(
+        description=_("部署"),
+        ordering="is_deployed",
+        label={"deployed": "success", "pending": "warning"},
+    )
+    def display_deploy_state(self, obj):
+        return (
+            ("deployed", _("已部署")) if obj.is_deployed else ("pending", _("未部署"))
+        )
+
+    @display(
+        description=_("收款"),
+        ordering="has_received",
+        label={"received": "success", "empty": ""},
+    )
+    def display_received_state(self, obj):
+        return ("received", _("有过入账")) if obj.has_received else ("empty", _("空"))
 
     def get_queryset(self, request):
         qs = (
@@ -318,40 +531,99 @@ class VaultSlotAdminBase(ReadOnlyModelAdmin):
 @admin.register(DepositVaultSlot)
 class DepositVaultSlotAdmin(VaultSlotAdminBase):
     list_display = (
+        "display_address",
         "customer",
         "project",
         "chain",
-        "address",
-        "is_deployed",
-        "has_received",
+        "display_deploy_state",
+        "display_received_state",
         "created_at",
     )
     search_fields = ("customer__uid", "project__name", "address")
+    search_help_text = _("支持按客户 UID、项目名称或合约地址搜索")
     usage = VaultSlotUsage.DEPOSIT
+    fieldsets = (
+        (
+            _("归属"),
+            {
+                "classes": ("tab",),
+                "fields": ("project", "customer", "chain", "created_at"),
+            },
+        ),
+        (
+            _("合约"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "display_full_address",
+                    "display_salt",
+                    "is_deployed",
+                    "has_received",
+                    "deploy_tx_task",
+                ),
+            },
+        ),
+    )
 
 
 @admin.register(InvoiceVaultSlot)
 class InvoiceVaultSlotAdmin(VaultSlotAdminBase):
     list_display = (
+        "display_address",
         "project",
         "invoice_index",
         "chain",
-        "address",
-        "is_deployed",
-        "has_received",
+        "display_deploy_state",
+        "display_received_state",
         "created_at",
     )
     search_fields = ("project__name", "address")
+    search_help_text = _("支持按项目名称或合约地址搜索")
     usage = VaultSlotUsage.INVOICE
+    fieldsets = (
+        (
+            _("归属"),
+            {
+                "classes": ("tab",),
+                "fields": ("project", "invoice_index", "chain", "created_at"),
+            },
+        ),
+        (
+            _("合约"),
+            {
+                "classes": ("tab",),
+                "fields": (
+                    "display_full_address",
+                    "display_salt",
+                    "is_deployed",
+                    "has_received",
+                    "deploy_tx_task",
+                ),
+            },
+        ),
+    )
 
 
 @admin.register(VaultSlotCollectSchedule)
 class VaultSlotCollectScheduleAdmin(ReadOnlyModelAdmin):
     actions = ("requeue_failed_collect_schedules",)
+    date_hierarchy = "due_at"
     ordering = ("due_at",)
-    list_display = ("vault_slot", "chain", "crypto", "due_at", "tx_task", "created_at")
-    list_filter = ("chain", "crypto")
+    list_display = (
+        "display_slot_address",
+        "chain",
+        "crypto",
+        "due_at",
+        "display_progress",
+        "created_at",
+    )
+    list_filter = (
+        ("chain", RelatedDropdownFilter),
+        ("crypto", RelatedDropdownFilter),
+        ("due_at", RangeDateTimeFilter),
+    )
     search_fields = ("vault_slot__address", "tx_task__tx_hash")
+    search_help_text = _("支持按收款合约地址或归集交易哈希搜索")
     list_select_related = ("vault_slot", "chain", "crypto", "tx_task")
     readonly_fields = (
         "chain",
@@ -359,9 +631,40 @@ class VaultSlotCollectScheduleAdmin(ReadOnlyModelAdmin):
         "crypto",
         "due_at",
         "tx_task",
+        "display_progress_text",
         "created_at",
         "updated_at",
     )
+    fields = readonly_fields
+
+    @display(description=_("收款合约"), ordering="vault_slot__address")
+    def display_slot_address(self, obj: VaultSlotCollectSchedule):
+        return fmt.truncated(obj.vault_slot.address)
+
+    @display(
+        description=_("进度"),
+        label={
+            "pending": "warning",
+            "queued": "warning",
+            "submitted": "info",
+            "succeeded": "success",
+            "failed": "danger",
+        },
+    )
+    def display_progress(self, obj: VaultSlotCollectSchedule):
+        # 归集计划本身没有状态字段：未派生 TxTask 即「等待窗口到期」，
+        # 已派生则直接透传链上任务状态，避免运维再点进 TxTask 才知道结果。
+        if obj.tx_task is None:
+            return ("pending", _("待到期"))
+        return (obj.tx_task.status, obj.tx_task.get_status_display())
+
+    @display(description=_("进度"))
+    def display_progress_text(self, obj: VaultSlotCollectSchedule):
+        # 详情页不能复用带 label 的 display：unfold 的标签渲染只作用于列表页，
+        # 放进 fieldsets 会把 (value, text) 元组原样打印出来。
+        if obj.tx_task is None:
+            return _("待到期")
+        return obj.tx_task.get_status_display()
 
     def has_requeue_permission(self, request):
         # 重新排队失败归集会新建 pending 计划并触发链上归集交易、消耗热钱包 gas，

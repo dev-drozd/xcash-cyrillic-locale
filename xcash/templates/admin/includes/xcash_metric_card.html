@@ -1,0 +1,24 @@
+{% load i18n unfold %}
+
+{# 看板与巡检页共用的指标卡：左侧语义色条 + 图标 + 数值 + 说明，可选进度条。 #}
+{% component "unfold/components/card.html" with href=item.href %}
+    <div class="{{ item.card_class }}">
+        <div class="flex items-start justify-between gap-3">
+            <div class="flex flex-col">
+                <span class="text-sm text-base-500 dark:text-base-400">{{ item.title }}</span>
+                <span class="{{ item.metric_class }}">{{ item.metric }}</span>
+            </div>
+            <span class="{{ item.icon_class }}">
+                <span class="material-symbols-outlined">{{ item.icon }}</span>
+            </span>
+        </div>
+
+        {% if item.progress is not None %}
+            <div class="mt-3">
+                {% component "unfold/components/progress.html" with value=item.progress %}{% endcomponent %}
+            </div>
+        {% endif %}
+
+        <p class="mt-2 text-sm text-base-400">{{ item.subtitle }}</p>
+    </div>
+{% endcomponent %}

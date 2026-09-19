@@ -8,13 +8,11 @@
         <div class="flex flex-col gap-8 pb-10">
 
             {# 用途说明与 Gas 风险提示，放在最上方让运维一眼明确这只是小额 Gas 钱包。 #}
-            <div class="rounded-default border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-500/30 dark:bg-amber-500/10">
-                <div class="flex gap-3">
-                    <span class="material-symbols-outlined shrink-0 text-amber-500">local_gas_station</span>
-                    <div class="text-sm leading-6 text-base-700 dark:text-base-300">
-                        <p class="mb-1">{% trans "系统热钱包用于平台基础设施交易，例如 VaultSlot 合约部署与 VaultSlot 归集等由系统主动发起的链上操作。" %}</p>
-                        <p class="mb-0 font-medium text-amber-700 dark:text-amber-300">{% trans "仅需保留覆盖近期操作的小额 Gas，请勿存入过多原生币，也不要把它当作业务资金归集地址。" %}</p>
-                    </div>
+            <div class="xc-callout xc-callout-warning">
+                <span class="material-symbols-outlined shrink-0 text-orange-700 dark:text-orange-400">local_gas_station</span>
+                <div>
+                    <p class="mb-1">{% trans "系统热钱包用于平台基础设施交易，例如 VaultSlot 合约部署与 VaultSlot 归集等由系统主动发起的链上操作。" %}</p>
+                    <p class="mb-0 xc-callout-strong">{% trans "仅需保留覆盖近期操作的小额 Gas，请勿存入过多原生币，也不要把它当作业务资金归集地址。" %}</p>
                 </div>
             </div>
 
@@ -29,28 +27,28 @@
                         <div class="flex flex-col gap-4 rounded-default border border-base-200 bg-white p-5 shadow-xs dark:border-base-800 dark:bg-base-900"
                              x-data="{ copied: false }">
                             <div class="flex items-center gap-3">
-                                <span class="flex size-10 items-center justify-center rounded-full bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400">
+                                <span class="xc-icon-badge xc-icon-primary">
                                     <span class="material-symbols-outlined">{{ card.icon }}</span>
                                 </span>
                                 <div>
-                                    <div class="text-xs font-medium uppercase tracking-wide text-base-400">{% trans "链类型" %}</div>
+                                    <div class="text-xs font-medium uppercase text-base-400">{% trans "链类型" %}</div>
                                     <div class="font-semibold text-important">{{ card.label }}</div>
                                 </div>
                             </div>
                             {% if card.error %}
-                                <div class="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                                    <span class="material-symbols-outlined text-lg!">error</span>
+                                <div class="flex items-center gap-2 rounded-default bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-400">
+                                    <span class="material-symbols-outlined text-lg">error</span>
                                     <span>{{ card.error }}</span>
                                 </div>
                             {% elif card.address %}
-                                <div class="flex items-center gap-2 rounded-lg bg-base-50 px-3 py-2 dark:bg-base-800/50">
-                                    <span class="grow font-mono text-sm break-all text-base-700 dark:text-base-200">{{ card.address }}</span>
+                                <div class="flex items-center gap-2 rounded-default bg-base-50 px-3 py-2 dark:bg-base-800">
+                                    <span class="xc-mono grow text-base-700 dark:text-base-200">{{ card.address }}</span>
                                     <button type="button"
-                                            class="flex size-8 shrink-0 items-center justify-center rounded-md text-base-400 transition-colors hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-800 dark:hover:text-base-200"
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-default text-base-400 transition-colors hover:bg-base-100 hover:text-base-700 dark:hover:bg-base-700 dark:hover:text-base-200"
                                             x-on:click="navigator.clipboard.writeText('{{ card.address }}'); copied = true; setTimeout(() => copied = false, 1500)"
                                             x-bind:title="copied ? '{% trans "已复制" %}' : '{% trans "复制地址" %}'">
-                                        <span class="material-symbols-outlined text-lg!" x-show="!copied">content_copy</span>
-                                        <span class="material-symbols-outlined text-lg! text-green-500" x-show="copied" x-cloak>check</span>
+                                        <span class="material-symbols-outlined text-lg" x-show="!copied">content_copy</span>
+                                        <span class="material-symbols-outlined text-lg text-green-700 dark:text-green-400" x-show="copied" x-cloak>check</span>
                                     </button>
                                 </div>
                             {% else %}
@@ -69,42 +67,42 @@
                 </div>
                 <div class="overflow-hidden rounded-default border border-base-200 bg-white shadow-xs dark:border-base-800 dark:bg-base-900">
                     {% if wallet_overview.balance_error %}
-                        <div class="flex items-center gap-2 px-5 py-4 text-sm text-red-600 dark:text-red-400">
-                            <span class="material-symbols-outlined text-lg!">error</span>
+                        <div class="flex items-center gap-2 px-5 py-4 text-sm text-red-700 dark:text-red-400">
+                            <span class="material-symbols-outlined text-lg">error</span>
                             <span>{{ wallet_overview.balance_error }}</span>
                         </div>
                     {% elif not wallet_overview.has_evm_chains %}
-                        <div class="px-5 py-10 text-center text-sm text-base-400">{% trans "暂无启用的 EVM 链" %}</div>
+                        <div class="xc-empty px-5">{% trans "暂无启用的 EVM 链" %}</div>
                     {% else %}
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="border-b border-base-200 text-left text-xs uppercase tracking-wide text-base-400 dark:border-base-800">
+                                    <tr class="border-b border-base-200 text-left text-xs uppercase text-base-400 dark:border-base-800">
                                         <th class="px-5 py-3 font-medium">{% trans "链" %}</th>
                                         <th class="px-5 py-3 font-medium">{% trans "原生币" %}</th>
                                         <th class="px-5 py-3 text-right font-medium">{% trans "余额" %}</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-base-200 dark:divide-base-800">
+                                <tbody class="xc-rows">
                                     {% for row in wallet_overview.balance_rows %}
-                                        <tr class="transition-colors hover:bg-base-50 dark:hover:bg-base-800/40">
+                                        <tr class="transition-colors hover:bg-base-50 dark:hover:bg-base-800">
                                             <td class="px-5 py-3">
                                                 <div class="flex items-center gap-2">
                                                     <span class="font-medium text-important">{{ row.name }}</span>
                                                     {% if row.is_testnet %}
-                                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">{% trans "测试网" %}</span>
+                                                        <span class="inline-block rounded-default bg-orange-100 px-2 text-[11px] leading-5 font-medium text-orange-700 dark:bg-orange-950 dark:text-orange-400">{% trans "测试网" %}</span>
                                                     {% endif %}
                                                 </div>
                                             </td>
                                             <td class="px-5 py-3 text-base-500 dark:text-base-400">{{ row.symbol }}</td>
                                             <td class="px-5 py-3 text-right whitespace-nowrap">
                                                 {% if row.status == "ok" %}
-                                                    <span class="font-mono font-medium text-important">{{ row.balance }}</span>
+                                                    <span class="xc-num font-medium text-important">{{ row.balance }}</span>
                                                     <span class="ml-1 text-base-400">{{ row.symbol }}</span>
                                                 {% elif row.status == "error" %}
-                                                    <span class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">{{ row.note }}</span>
+                                                    <span class="inline-block rounded-default bg-red-50 px-2.5 text-xs leading-6 text-red-700 dark:bg-red-950 dark:text-red-400">{{ row.note }}</span>
                                                 {% else %}
-                                                    <span class="inline-flex items-center rounded-full bg-base-100 px-2.5 py-0.5 text-xs text-base-500 dark:bg-base-800 dark:text-base-400">{{ row.note }}</span>
+                                                    <span class="inline-block rounded-default bg-base-100 px-2.5 text-xs leading-6 text-base-500 dark:bg-base-800 dark:text-base-400">{{ row.note }}</span>
                                                 {% endif %}
                                             </td>
                                         </tr>

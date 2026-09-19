@@ -1,0 +1,401 @@
+# Xcash 后台第三方界面文案中文包。
+#
+# django-unfold 自身不发布任何 locale 目录，它模板里的英文界面文案（搜索框占位符、
+# 空态提示、筛选与保存按钮等）在 zh-hans 下会原样露出英文。
+#
+# 这份目录【独立于 locale/】存在的原因：`makemessages` 只扫描项目自身源码，
+# 把第三方 msgid 写进 locale/ 会在下一次 makemessages 时被标记成 `#~` 废弃条目失效
+# （历史上已经发生过一次）。放在 locale_vendor/ 下由人工维护，makemessages 不会触碰。
+#
+# 升级 django-unfold 后如果出现新的英文文案，在此追加条目并重新 compilemessages。
+msgid ""
+msgstr ""
+"Project-Id-Version: xcash-vendor\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-19 00:00+0800\n"
+"PO-Revision-Date: 2026-09-19 00:00+0800\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# ---------- 列表页 ----------
+msgid "Type to search"
+msgstr "输入关键字搜索"
+
+msgid "No results found"
+msgstr "没有匹配的数据"
+
+msgid "This page yielded into no results. Create a new item or reset your filters."
+msgstr "当前筛选条件下没有数据，请调整筛选条件或新建一条记录。"
+
+msgid "Nothing matched your search"
+msgstr "没有搜索到匹配内容"
+
+msgid "No data"
+msgstr "暂无数据"
+
+msgid "Filters"
+msgstr "筛选"
+
+msgid "Apply Filters"
+msgstr "应用筛选"
+
+msgid "Reset filters"
+msgstr "重置筛选"
+
+msgid "Clear all filters"
+msgstr "清空全部筛选"
+
+msgid "Toggle filter"
+msgstr "展开或收起筛选"
+
+msgid "Clear"
+msgstr "清除"
+
+msgid "Clear selection"
+msgstr "清除选择"
+
+msgid "Select"
+msgstr "选择"
+
+msgid "Select value"
+msgstr "请选择"
+
+msgid "Select record"
+msgstr "选择记录"
+
+msgid "Select currency"
+msgstr "选择币种"
+
+msgid "Select action"
+msgstr "选择操作"
+
+msgid "Select action to run"
+msgstr "选择要执行的操作"
+
+msgid "Run"
+msgstr "执行"
+
+msgid "Run the selected action"
+msgstr "执行所选操作"
+
+msgid "Action"
+msgstr "操作"
+
+msgid "Objects"
+msgstr "记录"
+
+msgid "Summary"
+msgstr "概览"
+
+msgid "Show all"
+msgstr "显示全部"
+
+msgid "Show counts"
+msgstr "显示数量"
+
+msgid "Hide counts"
+msgstr "隐藏数量"
+
+msgid "Toggle sorting"
+msgstr "切换排序"
+
+msgid "Remove from sorting"
+msgstr "取消该列排序"
+
+msgid "Sorting priority: {{ priority_number }}"
+msgstr "排序优先级：{{ priority_number }}"
+
+msgid "By {{ filter_title }}"
+msgstr "按{{ filter_title }}筛选"
+
+msgid "Select all objects on this page for an action"
+msgstr "选中本页全部记录"
+
+msgid "Select all {{ total_count }} {{ module_name }}"
+msgstr "选中全部 {{ total_count }} 条{{ module_name }}"
+
+msgid "Click here to select the objects across all pages"
+msgstr "点击选中所有分页的全部记录"
+
+msgid "Click to cancel"
+msgstr "点击取消"
+
+msgid "Click to download"
+msgstr "点击下载"
+
+msgid "Items must be selected in order to perform actions on them. No items have been changed."
+msgstr "执行操作前必须先选中记录，本次没有任何记录被修改。"
+
+msgid "{{ counter }} result{% plural %}{{ counter }} results"
+msgstr "{{ counter }} 条结果"
+
+msgid "{{ full_result_count }} total"
+msgstr "共 {{ full_result_count }} 条"
+
+msgid "Found <span class=\"font-medium text-important\">{{ counter }}</span> result in {{ time }} seconds {% plural %} Found <span class=\"font-medium text-important\">{{ counter }}</span> results in {{ time }} seconds"
+msgstr "找到 <span class=\"font-medium text-important\">{{ counter }}</span> 条结果，用时 {{ time }} 秒"
+
+msgid "entry{% plural %}entries"
+msgstr "条"
+
+msgid "Previous"
+msgstr "上一页"
+
+msgid "Next"
+msgstr "下一页"
+
+# ---------- 详情页与表单 ----------
+msgid "Save"
+msgstr "保存"
+
+msgid "Save and add another"
+msgstr "保存并新增另一条"
+
+msgid "Save and continue editing"
+msgstr "保存并继续编辑"
+
+msgid "Save and view"
+msgstr "保存并查看"
+
+msgid "Save as new"
+msgstr "另存为新记录"
+
+msgid "Submit"
+msgstr "提交"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Change"
+msgstr "修改"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "View"
+msgstr "查看"
+
+msgid "Add"
+msgstr "新增"
+
+msgid "Add row"
+msgstr "新增一行"
+
+msgid "Add {{ name }}"
+msgstr "新增{{ name }}"
+
+msgid "Add another {{ model }}"
+msgstr "再新增一条{{ model }}"
+
+msgid "Change selected {{ model }}"
+msgstr "修改所选{{ model }}"
+
+msgid "Delete selected {{ model }}"
+msgstr "删除所选{{ model }}"
+
+msgid "View selected {{ model }}"
+msgstr "查看所选{{ model }}"
+
+msgid "Create new record"
+msgstr "新建记录"
+
+msgid "General"
+msgstr "基本"
+
+msgid "Go back"
+msgstr "返回"
+
+msgid "History"
+msgstr "历史"
+
+msgid "Home"
+msgstr "首页"
+
+msgid "Choose file to upload"
+msgstr "选择要上传的文件"
+
+msgid "Image preview"
+msgstr "图片预览"
+
+msgid "Record picture"
+msgstr "记录图片"
+
+msgid "Please correct the error below.{% plural %}Please correct the errors below."
+msgstr "请修正下面的错误。"
+
+msgid "This object doesn’t have a change history. It probably wasn’t added via this admin site."
+msgstr "该记录没有变更历史，可能不是通过后台创建的。"
+
+msgid "You can not create nested object without parent"
+msgstr "必须先有父级记录才能创建嵌套记录"
+
+msgid "Dataset not found. No action performed."
+msgstr "未找到数据集，未执行任何操作。"
+
+msgid "Date"
+msgstr "日期"
+
+msgid "Time"
+msgstr "时间"
+
+msgid "Date/time"
+msgstr "日期 / 时间"
+
+msgid "True"
+msgstr "是"
+
+msgid "False"
+msgstr "否"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Unknown content"
+msgstr "未知内容"
+
+msgid "User"
+msgstr "用户"
+
+# ---------- 删除确认 ----------
+msgid "This item will be deleted."
+msgstr "该记录将被删除。"
+
+msgid "Yes, I’m sure"
+msgstr "确认删除"
+
+msgid "No, take me back"
+msgstr "返回，不删除"
+
+msgid "Are you sure you want to delete the {{ object_name }} \"{{ escaped_object }}\"? All of the following related items will be deleted:"
+msgstr "确定要删除{{ object_name }}「{{ escaped_object }}」吗？以下关联记录会一并删除："
+
+msgid "Are you sure you want to delete the selected {{ objects_name }}? All of the following objects and their related items will be deleted:"
+msgstr "确定要删除所选的{{ objects_name }}吗？以下记录及其关联数据会一并删除："
+
+msgid "Deleting the {{ object_name }} '{{ escaped_object }}' would require deleting the following protected related objects:"
+msgstr "删除{{ object_name }}「{{ escaped_object }}」需要先删除以下受保护的关联记录："
+
+msgid "Deleting the {{ object_name }} '{{ escaped_object }}' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:"
+msgstr "删除{{ object_name }}「{{ escaped_object }}」会连带删除关联记录，但当前账号没有删除以下类型记录的权限："
+
+msgid "Deleting the selected {{ objects_name }} would require deleting the following protected related objects:"
+msgstr "删除所选{{ objects_name }}需要先删除以下受保护的关联记录："
+
+msgid "Deleting the selected {{ objects_name }} would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:"
+msgstr "删除所选{{ objects_name }}会连带删除关联记录，但当前账号没有删除以下类型记录的权限："
+
+# ---------- 导航与全局 ----------
+msgid "All applications"
+msgstr "全部模块"
+
+msgid "Models in the {{ name }} application"
+msgstr "{{ name }} 模块下的数据"
+
+msgid "Recent actions"
+msgstr "最近操作"
+
+msgid "Recent searches"
+msgstr "最近搜索"
+
+msgid "Toggle sidebar"
+msgstr "展开或收起侧边栏"
+
+msgid "Toggle dark/light mode"
+msgstr "切换深色 / 浅色模式"
+
+msgid "Dark"
+msgstr "深色"
+
+msgid "Light"
+msgstr "浅色"
+
+msgid "System"
+msgstr "跟随系统"
+
+msgid "Return to site"
+msgstr "返回站点"
+
+msgid "View site"
+msgstr "访问站点"
+
+msgid "View on site"
+msgstr "在站点中查看"
+
+msgid "Open command tool"
+msgstr "打开命令面板"
+
+msgid "Search apps and models..."
+msgstr "搜索模块与数据表…"
+
+msgid "Open selection"
+msgstr "打开所选项"
+
+msgid "Open selection in new tab"
+msgstr "在新标签页打开所选项"
+
+msgid "Open shortcuts list"
+msgstr "查看快捷键"
+
+msgid "Available shortcuts"
+msgstr "可用快捷键"
+
+msgid "Global shortcuts"
+msgstr "全局快捷键"
+
+msgid "Changelist shortcuts"
+msgstr "列表页快捷键"
+
+msgid "Command tool shortcuts"
+msgstr "命令面板快捷键"
+
+msgid "Navigate"
+msgstr "导航"
+
+# ---------- 登录与账号 ----------
+msgid "Log in"
+msgstr "登录"
+
+msgid "Log in again"
+msgstr "重新登录"
+
+msgid "Log out"
+msgstr "退出登录"
+
+msgid "You have been successfully logged out from the administration"
+msgstr "已退出后台登录"
+
+msgid "Thanks for spending some quality time with the web site today."
+msgstr "感谢使用。"
+
+msgid "Change password"
+msgstr "修改密码"
+
+msgid "Your password was changed."
+msgstr "密码已修改。"
+
+msgid "Toggle password visibility"
+msgstr "显示或隐藏密码"
+
+msgid "Enter a new password for the user <strong>{{ username }}</strong>."
+msgstr "为用户 <strong>{{ username }}</strong> 设置新密码。"
+
+msgid "Please enter your old password, for security’s sake, and then enter your new password twice so we can verify you typed it in correctly."
+msgstr "出于安全考虑，请先输入原密码，然后两次输入新密码以便校验。"
+
+msgid "After you've created a user, you’ll be able to edit more user options."
+msgstr "创建用户后，可以继续编辑更多用户选项。"
+
+msgid "Forgotten your password or username?"
+msgstr "忘记密码或用户名？"
+
+msgid "You don’t have permission to view or edit anything."
+msgstr "当前账号没有任何查看或编辑权限。"
+
+msgid "You are authenticated as {{ username }}, but are not authorized to access this page. Would you like to login to a different account?"
+msgstr "当前登录账号为 {{ username }}，但没有访问该页面的权限。是否换一个账号登录？"

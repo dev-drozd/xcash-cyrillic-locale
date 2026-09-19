@@ -13,13 +13,43 @@ from stress.models import StressRun
 from stress.models import StressRunStatus
 from stress.service import StressService
 from stress.tasks import prepare_stress
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
+from unfold.contrib.filters.admin import RelatedDropdownFilter
+from unfold.decorators import display
 
+from common import admin_display as fmt
 from common.admin import ModelAdmin
 from common.admin import TabularInline
+
+# 压测 case 的状态是一条线性流水线，配色只区分「进行中 / 成功 / 失败 / 跳过」四档，
+# 避免为每个中间态各配一种颜色反而看不出结论。
+STRESS_CASE_STATUS_LABELS = {
+    "pending": "",
+    "creating": "info",
+    "created": "info",
+    "paying": "info",
+    "paid": "info",
+    "webhook_ok": "info",
+    "succeeded": "success",
+    "failed": "danger",
+    "skipped": "warning",
+}
+
+STRESS_RUN_STATUS_LABELS = {
+    StressRunStatus.DRAFT: "",
+    StressRunStatus.PREPARING: "info",
+    StressRunStatus.FAILED: "danger",
+    StressRunStatus.READY: "warning",
+    StressRunStatus.RUNNING: "info",
+    StressRunStatus.COMPLETED: "success",
+}
 
 
 class InvoiceStressCaseInline(TabularInline):
     model = InvoiceStressCase
+    tab = True
+    show_count = True
+    per_page = 20
     fields = (
         "sequence",
         "status",
@@ -45,6 +75,9 @@ class InvoiceStressCaseInline(TabularInline):
 
 class DepositStressCaseInline(TabularInline):
     model = DepositStressCase
+    tab = True
+    show_count = True
+    per_page = 20
     fields = (
         "sequence",
         "status",
@@ -154,22 +187,18 @@ def _percentile_metrics(
 class StressRunAdmin(ModelAdmin):
     inlines = ()
 
+    ordering = ("-created_at",)
     list_display = (
-        "name",
-        "count",
-        "evm_invoice_receiving_mode",
-        "deposit_count",
-        "deposit_customer_count",
-        "status",
-        "succeeded",
-        "failed",
-        "skipped",
+        "display_identity",
+        "display_status",
+        "display_scale",
+        "display_result",
         "created_at",
-        "started_at",
         "finished_at",
     )
-    list_filter = ("status",)
+    list_filter = (("status", ChoicesDropdownFilter),)
     search_fields = ("name",)
+    search_help_text = _("支持按轮次名称搜索")
     readonly_fields = (
         "status",
         "project",
@@ -207,6 +236,31 @@ class StressRunAdmin(ModelAdmin):
             "started_at",
             "finished_at",
             "metrics_summary",
+        )
+
+    @display(description=_("轮次"), ordering="name", header=True)
+    def display_identity(self, obj: StressRun):
+        return (obj.name, obj.get_evm_invoice_receiving_mode_display())
+
+    @display(description=_("状态"), ordering="status", label=STRESS_RUN_STATUS_LABELS)
+    def display_status(self, obj: StressRun):
+        return (obj.status, obj.get_status_display())
+
+    @display(description=_("规模"))
+    def display_scale(self, obj: StressRun):
+        # 账单与充值两类用例数一起决定本轮压测强度，拆成两列反而要来回对照。
+        return fmt.stacked(
+            _("账单 %(count)s") % {"count": obj.count},
+            _("充值 %(count)s / 客户 %(customers)s")
+            % {"count": obj.deposit_count, "customers": obj.deposit_customer_count},
+        )
+
+    @display(description=_("结果"))
+    def display_result(self, obj: StressRun):
+        return fmt.stacked(
+            _("成功 %(n)s") % {"n": obj.succeeded},
+            _("失败 %(failed)s / 跳过 %(skipped)s")
+            % {"failed": obj.failed, "skipped": obj.skipped},
         )
 
     @admin.display(description=_("各阶段耗时分位数"))
@@ -320,23 +374,23 @@ class StressRunAdmin(ModelAdmin):
 
 @admin.register(InvoiceStressCase)
 class InvoiceStressCaseAdmin(ModelAdmin):
+    ordering = ("stress_run", "sequence")
+    list_select_related = ("stress_run",)
     list_display = (
+        "display_identity",
         "stress_run",
-        "sequence",
-        "status",
-        "crypto",
-        "chain",
-        "invoice_sys_no",
-        "tx_hash",
-        "webhook_received",
-        "webhook_signature_ok",
-        "webhook_payload_ok",
-        "webhook_nonce_ok",
-        "webhook_timestamp_ok",
-        "collection_verified",
+        "display_status",
+        "display_method",
+        "display_tx_hash",
+        "display_webhook_checks",
+        "display_collection",
     )
-    list_filter = ("stress_run", "status")
+    list_filter = (
+        ("stress_run", RelatedDropdownFilter),
+        ("status", ChoicesDropdownFilter),
+    )
     search_fields = ("invoice_sys_no", "invoice_out_no", "tx_hash")
+    search_help_text = _("支持按账单单号、商户单号或交易哈希搜索")
 
     def has_add_permission(self, request):
         return False
@@ -346,28 +400,77 @@ class InvoiceStressCaseAdmin(ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    @display(description=_("用例"), ordering="sequence", header=True)
+    def display_identity(self, obj):
+        return (f"#{obj.sequence}", obj.invoice_sys_no or fmt.EMPTY_VALUE)
+
+    @display(description=_("状态"), ordering="status", label=STRESS_CASE_STATUS_LABELS)
+    def display_status(self, obj):
+        return (obj.status, obj.get_status_display())
+
+    @display(description=_("收款方式"))
+    def display_method(self, obj):
+        return fmt.stacked(obj.crypto, obj.chain)
+
+    @display(description=_("交易哈希"), ordering="tx_hash")
+    def display_tx_hash(self, obj):
+        return fmt.truncated(obj.tx_hash)
+
+    @display(
+        description=_("Webhook 校验"),
+        label={"ok": "success", "partial": "warning", "none": ""},
+    )
+    def display_webhook_checks(self, obj):
+        # 四个校验位逐列展示会占掉半屏且难判断结论，压缩成一个「全过 / 部分 / 未收到」标签。
+        if not obj.webhook_received:
+            return ("none", _("未收到"))
+        checks = (
+            obj.webhook_signature_ok,
+            obj.webhook_payload_ok,
+            obj.webhook_nonce_ok,
+            obj.webhook_timestamp_ok,
+        )
+        if all(checks):
+            return ("ok", _("全部通过"))
+        return (
+            "partial",
+            _("%(passed)s/4 通过") % {"passed": sum(bool(c) for c in checks)},
+        )
+
+    @display(
+        description=_("归集"),
+        ordering="collection_verified",
+        label={"verified": "success", "pending": ""},
+    )
+    def display_collection(self, obj):
+        return (
+            ("verified", _("已验证"))
+            if obj.collection_verified
+            else ("pending", _("未验证"))
+        )
 
 
 @admin.register(DepositStressCase)
 class DepositStressCaseAdmin(ModelAdmin):
+    ordering = ("stress_run", "sequence")
+    list_select_related = ("stress_run",)
     list_display = (
+        "display_identity",
         "stress_run",
-        "sequence",
-        "status",
-        "customer_uid",
-        "crypto",
-        "chain",
-        "amount",
-        "tx_hash",
-        "webhook_received",
-        "webhook_signature_ok",
-        "webhook_payload_ok",
-        "webhook_nonce_ok",
-        "webhook_timestamp_ok",
-        "collection_verified",
+        "display_status",
+        "display_method",
+        "display_amount",
+        "display_tx_hash",
+        "display_webhook_checks",
+        "display_collection",
     )
-    list_filter = ("stress_run", "status")
+    list_filter = (
+        ("stress_run", RelatedDropdownFilter),
+        ("status", ChoicesDropdownFilter),
+    )
     search_fields = ("customer_uid", "tx_hash", "collection_hash")
+    search_help_text = _("支持按客户 UID、交易哈希或归集哈希搜索")
 
     def has_add_permission(self, request):
         return False
@@ -377,3 +480,56 @@ class DepositStressCaseAdmin(ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    @display(description=_("用例"), ordering="sequence", header=True)
+    def display_identity(self, obj):
+        return (f"#{obj.sequence}", obj.customer_uid)
+
+    @display(description=_("金额"), ordering="amount")
+    def display_amount(self, obj):
+        return fmt.number(obj.amount, unit=str(obj.crypto))
+
+    @display(description=_("状态"), ordering="status", label=STRESS_CASE_STATUS_LABELS)
+    def display_status(self, obj):
+        return (obj.status, obj.get_status_display())
+
+    @display(description=_("收款方式"))
+    def display_method(self, obj):
+        return fmt.stacked(obj.crypto, obj.chain)
+
+    @display(description=_("交易哈希"), ordering="tx_hash")
+    def display_tx_hash(self, obj):
+        return fmt.truncated(obj.tx_hash)
+
+    @display(
+        description=_("Webhook 校验"),
+        label={"ok": "success", "partial": "warning", "none": ""},
+    )
+    def display_webhook_checks(self, obj):
+        # 四个校验位逐列展示会占掉半屏且难判断结论，压缩成一个「全过 / 部分 / 未收到」标签。
+        if not obj.webhook_received:
+            return ("none", _("未收到"))
+        checks = (
+            obj.webhook_signature_ok,
+            obj.webhook_payload_ok,
+            obj.webhook_nonce_ok,
+            obj.webhook_timestamp_ok,
+        )
+        if all(checks):
+            return ("ok", _("全部通过"))
+        return (
+            "partial",
+            _("%(passed)s/4 通过") % {"passed": sum(bool(c) for c in checks)},
+        )
+
+    @display(
+        description=_("归集"),
+        ordering="collection_verified",
+        label={"verified": "success", "pending": ""},
+    )
+    def display_collection(self, obj):
+        return (
+            ("verified", _("已验证"))
+            if obj.collection_verified
+            else ("pending", _("未验证"))
+        )

@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from django.contrib import admin
 from django.urls import reverse
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from unfold.contrib.filters.admin import ChoicesDropdownFilter
+from unfold.contrib.filters.admin import RangeDateTimeFilter
+from unfold.contrib.filters.admin import RelatedDropdownFilter
 from unfold.decorators import display
 
+from common import admin_display as fmt
 from common.admin import ModelAdmin
 from common.admin import ReadOnlyModelAdmin
 from common.admin import StackedInline
-from common.utils.math import format_decimal_stripped
 
 from .models import DifferRecipientAddress
 from .models import EpayOrder
@@ -23,6 +27,7 @@ class EpayOrderInline(StackedInline):
     extra = 0
     max_num = 1
     can_delete = False
+    tab = True
     verbose_name = _("EPay 订单")
     verbose_name_plural = _("EPay 订单")
     fields = (
@@ -39,7 +44,20 @@ class EpayOrderInline(StackedInline):
         "notify_event",
         "created_at",
     )
-    readonly_fields = fields
+    readonly_fields = (
+        "trade_no",
+        "out_trade_no",
+        "merchant",
+        "pid",
+        "type",
+        "money",
+        "sign_type",
+        "notify_url",
+        "return_url",
+        "param",
+        "notify_event",
+        "created_at",
+    )
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -48,9 +66,9 @@ class EpayOrderInline(StackedInline):
 @admin.register(DifferRecipientAddress)
 class DifferRecipientAddressAdmin(ModelAdmin):
     list_display = (
+        "display_address",
         "project",
-        "chain_type",
-        "address",
+        "display_chain_type",
         "active",
         "sort_order",
         "created_at",
@@ -60,101 +78,153 @@ class DifferRecipientAddressAdmin(ModelAdmin):
         "sort_order",
     )
     list_filter = (
-        "chain_type",
+        ("chain_type", ChoicesDropdownFilter),
         "active",
+        ("project", RelatedDropdownFilter),
         "project__is_test",
     )
+    list_select_related = ("project",)
     search_fields = (
         "project__name",
         "project__appid",
         "address",
     )
+    search_help_text = _("支持按项目名称、Appid 或收款地址搜索")
     readonly_fields = ("created_at",)
-    fields = (
-        "project",
-        "chain_type",
-        "address",
-        "active",
-        "sort_order",
-        "created_at",
+    fieldsets = (
+        (
+            _("收款地址"),
+            {
+                "fields": (
+                    "project",
+                    "chain_type",
+                    "address",
+                ),
+                "description": _(
+                    "钱包直收模式下，账单收款直接打到这里配置的外部地址；同一链类型可配置多条并按排序轮换。"
+                ),
+            },
+        ),
+        (
+            _("启用与排序"),
+            {"fields": ("active", "sort_order", "created_at")},
+        ),
     )
+
+    @display(description=_("收款地址"), ordering="address")
+    def display_address(self, obj: DifferRecipientAddress):
+        return fmt.truncated(obj.address)
+
+    @display(
+        description=_("链类型"),
+        ordering="chain_type",
+        label={"evm": "info", "tron": "warning"},
+    )
+    def display_chain_type(self, obj: DifferRecipientAddress):
+        return (obj.chain_type, obj.get_chain_type_display())
 
 
 @admin.register(Invoice)
 class InvoiceAdmin(ReadOnlyModelAdmin):
     inlines = (EpayOrderInline,)
-    readonly_fields = (
-        "display_crypto",
-        "display_chain",
-        "display_risk_level",
-    )
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    list_select_related = ("project", "crypto", "chain", "currency", "transfer")
+    list_filter_sheet = False
 
+    # 列表页按「是谁的单 → 收多少 → 收什么 → 到哪一步 → 有无风险」的阅读顺序编排，
+    # 强相关字段合并成一列，避免横向滚动才能看全一笔账单。
     list_display = (
-        "sys_no",
+        "display_identity",
         "project",
-        "out_no",
-        "currency_amount_display",
-        "display_pay_url",
-        "display_crypto",
-        "pay_amount_display",
-        "expires_at",
-        "display_protocol",
+        "display_amount",
+        "display_pay_amount",
+        "display_network",
         "display_status",
-        "display_risk_level",
-        "risk_score",
+        "display_protocol",
+        "display_risk",
+        "created_at",
+        "display_pay_url",
     )
     search_fields = (
         "sys_no",
         "out_no",
         "transfer__hash",
+        "pay_address",
     )
+    search_help_text = _("支持按系统单号、商户单号、链上交易哈希或收款地址搜索")
     list_filter = (
-        "chain",
-        "crypto",
-        "status",
-        "protocol",
-        "risk_level",
+        ("status", ChoicesDropdownFilter),
+        ("protocol", ChoicesDropdownFilter),
+        ("chain", RelatedDropdownFilter),
+        ("crypto", RelatedDropdownFilter),
+        ("project", RelatedDropdownFilter),
+        ("risk_level", ChoicesDropdownFilter),
+        ("created_at", RangeDateTimeFilter),
+    )
+    readonly_fields = (
+        "display_detail_crypto",
+        "display_detail_chain",
+        "display_detail_risk",
+        "display_detail_pay_url",
+        "display_detail_methods",
     )
     fieldsets = (
         (
-            _("基本信息"),
+            _("订单"),
             {
+                "classes": ("tab",),
                 "fields": (
-                    "project",
                     "sys_no",
                     "out_no",
+                    "project",
+                    "protocol",
                     "title",
+                    "status",
+                    "created_at",
+                    "expires_at",
+                ),
+            },
+        ),
+        (
+            _("金额"),
+            {
+                "classes": ("tab",),
+                "fields": (
                     "currency",
                     "amount",
                     "worth",
-                    "methods",
-                    "notify_url",
-                    "return_url",
-                    "created_at",
-                    "expires_at",
-                    "status",
-                    "protocol",
-                )
+                    "display_detail_methods",
+                ),
             },
         ),
         (
-            _("账单收款信息"),
+            _("链上收款"),
             {
+                "classes": ("tab",),
                 "fields": (
-                    "display_crypto",  # noqa
-                    "display_chain",  # noqa
+                    "display_detail_crypto",
+                    "display_detail_chain",
                     "pay_amount",
                     "pay_address",
-                )
+                    "transfer",
+                    "display_detail_pay_url",
+                ),
             },
-        ),
-        (
-            _("交易收据"),
-            {"fields": ("transfer",)},
         ),
         (
             _("风控"),
-            {"fields": ("display_risk_level", "risk_score")},
+            {
+                "classes": ("tab",),
+                "fields": ("display_detail_risk", "risk_score"),
+            },
+        ),
+        (
+            _("回调"),
+            {
+                "classes": ("tab",),
+                "fields": ("notify_url", "return_url"),
+            },
         ),
     )
 
@@ -169,9 +239,18 @@ class InvoiceAdmin(ReadOnlyModelAdmin):
             ]
         return inline_instances
 
+    @display(description=_("单号"), ordering="sys_no", header=True)
+    def display_identity(self, instance: Invoice):
+        # header 展示为两行：系统单号在上、商户单号在下，省掉一整列还更好扫读。
+        return (
+            instance.sys_no,
+            _("商户单号 %(out_no)s") % {"out_no": instance.out_no},
+        )
+
     @display(
-        description=_("状态"),  # noqa
-        label={  # noqa
+        description=_("状态"),
+        ordering="status",
+        label={
             InvoiceStatus.WAITING: "warning",
             InvoiceStatus.COMPLETED: "success",
             InvoiceStatus.EXPIRED: "",
@@ -181,20 +260,24 @@ class InvoiceAdmin(ReadOnlyModelAdmin):
         return (instance.status, instance.get_status_display())
 
     @display(
-        description=_("风险"),  # noqa
-        label={  # noqa
+        description=_("风险"),
+        ordering="risk_level",
+        label={
             "Low": "success",
             "Moderate": "warning",
             "High": "danger",
             "Severe": "danger",
         },
     )
-    def display_risk_level(self, instance: Invoice):
-        return instance.risk_level or "-"
+    def display_risk(self, instance: Invoice):
+        if not instance.risk_level:
+            return None
+        return (instance.risk_level, f"{instance.risk_level} · {instance.risk_score}")
 
     @display(
-        description=_("协议"),  # noqa
-        label={  # noqa
+        description=_("协议"),
+        ordering="protocol",
+        label={
             InvoiceProtocol.NATIVE: "info",
             InvoiceProtocol.EPAY_V1: "primary",
         },
@@ -202,30 +285,62 @@ class InvoiceAdmin(ReadOnlyModelAdmin):
     def display_protocol(self, instance: Invoice):
         return (instance.protocol, instance.get_protocol_display())
 
-    @display(
-        description=_("金额"),  # noqa
-    )
-    def currency_amount_display(self, instance: Invoice):
-        # 后台金额展示统一去掉末尾无意义的 0，避免高精度 Decimal 显得冗长。
+    @display(description=_("计价金额"), ordering="amount")
+    def display_amount(self, instance: Invoice):
         # currency 为 Fiat FK，取 currency_id 直接拿法币 code，避免 __str__ 带上 icon。
-        return f"{format_decimal_stripped(instance.amount)} {instance.currency_id}"
+        return fmt.number(instance.amount, unit=instance.currency_id)
 
-    @display(
-        description=_("加密货币数量"),  # noqa
-    )
-    def pay_amount_display(self, instance: Invoice):
-        return (
-            format_decimal_stripped(instance.pay_amount) if instance.pay_amount else "-"
+    @display(description=_("收款数量"), ordering="pay_amount")
+    def display_pay_amount(self, instance: Invoice):
+        if instance.pay_amount is None:
+            return fmt.empty()
+        return fmt.number(
+            instance.pay_amount,
+            unit=instance.crypto.symbol if instance.crypto else "",
         )
 
-    @display(description=_("账单收款链接"))  # noqa
+    @display(description=_("网络"), ordering="chain")
+    def display_network(self, instance: Invoice):
+        return instance.chain.code if instance.chain else fmt.empty()
+
+    @display(description=_("收款页"))
     def display_pay_url(self, instance: Invoice):
-        return reverse("payment-invoice", kwargs={"sys_no": instance.sys_no})
+        return format_html(
+            '<a class="text-primary-600 dark:text-primary-400" href="{}" target="_blank" rel="noopener">'
+            '<span class="material-symbols-outlined align-middle text-base">open_in_new</span></a>',
+            reverse("payment-invoice", kwargs={"sys_no": instance.sys_no}),
+        )
 
-    @display(description=_("加密货币"))  # noqa
-    def display_crypto(self, obj: Invoice):
-        return obj.crypto.symbol if obj.crypto else "-"
+    @display(description=_("收款页链接"))
+    def display_detail_pay_url(self, instance: Invoice):
+        url = reverse("payment-invoice", kwargs={"sys_no": instance.sys_no})
+        return format_html(
+            '<a class="text-primary-600 dark:text-primary-400" href="{}" target="_blank" rel="noopener">{}</a>',
+            url,
+            url,
+        )
 
-    @display(description=_("链"))  # noqa
-    def display_chain(self, obj: Invoice):
-        return obj.chain.name if obj.chain else "-"
+    @display(description=_("加密货币"))
+    def display_detail_crypto(self, obj: Invoice):
+        return obj.crypto.symbol if obj.crypto else fmt.empty()
+
+    @display(description=_("链"))
+    def display_detail_chain(self, obj: Invoice):
+        return obj.chain.name if obj.chain else fmt.empty()
+
+    @display(description=_("风险等级"))
+    def display_detail_risk(self, instance: Invoice):
+        return instance.risk_level or fmt.empty()
+
+    @display(description=_("可选收款方式"))
+    def display_detail_methods(self, instance: Invoice):
+        # methods 是 {symbol: [chain_code]} 的 JSON，原样展示可读性差，压成一行标签。
+        if not instance.methods:
+            return fmt.empty()
+        return format_html(
+            '<span class="xc-mono">{}</span>',
+            "  ".join(
+                f"{symbol}: {', '.join(chains)}"
+                for symbol, chains in instance.methods.items()
+            ),
+        )

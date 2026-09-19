@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Xcash 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-06 23:19-0400\n"
+"POT-Creation-Date: 2026-09-19 14:12+0000\n"
 "PO-Revision-Date: 2025-09-27 02:10+0000\n"
 "Last-Translator: AI Translator <translate@xcash.com>\n"
 "Language-Team: English <team@xcash.com>\n"
@@ -18,17 +18,17 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: config/settings/dev.py:119 xcash/stress/models.py:92
-#: xcash/stress/models.py:160
+#: xcash/stress/models.py:166
 msgid "测试轮次"
 msgstr "Test Run"
 
-#: config/settings/dev.py:124 xcash/stress/models.py:147
-#: xcash/stress/models.py:148
+#: config/settings/dev.py:124 xcash/stress/models.py:153
+#: xcash/stress/models.py:154
 msgid "账单收款测试"
 msgstr "Invoice Payment Test"
 
-#: config/settings/dev.py:129 xcash/stress/models.py:213
-#: xcash/stress/models.py:214
+#: config/settings/dev.py:129 xcash/stress/models.py:225
+#: xcash/stress/models.py:226
 msgid "充值收款测试"
 msgstr "Deposit Test"
 
@@ -36,148 +36,256 @@ msgstr "Deposit Test"
 msgid "压测"
 msgstr "Stress Testing"
 
-#: config/settings/unfold.py:56
+#: config/settings/unfold.py:64
 msgid "文档"
 msgstr "Documentation"
 
-#: config/settings/unfold.py:83
+#: config/settings/unfold.py:91
 msgid "系统"
 msgstr "System"
 
-#: config/settings/unfold.py:87 xcash/templates/admin/index.html:30
+#: config/settings/unfold.py:95 xcash/templates/admin/index.html:31
 msgid "经营看板"
 msgstr "Operations Dashboard"
 
-#: config/settings/unfold.py:92 config/settings/unfold.py:101
-#: xcash/core/admin.py:44 xcash/core/dashboard.py:633
-#: xcash/templates/admin/operational_inspection.html:22
+#: config/settings/unfold.py:100 config/settings/unfold.py:109
+#: xcash/core/dashboard.py:804
+#: xcash/templates/admin/operational_inspection.html:24
 msgid "异常巡检"
 msgstr "Operational Inspection"
 
-#: config/settings/unfold.py:107
+#: config/settings/unfold.py:115
 msgid "系统钱包"
 msgstr "System Wallet"
 
-#: config/settings/unfold.py:112
+#: config/settings/unfold.py:120
 msgid "运行参数"
 msgstr "Runtime Settings"
 
-#: config/settings/unfold.py:119
-msgid "货币"
-msgstr "Currency"
-
-#: config/settings/unfold.py:123 xcash/chains/admin.py:186
-#: xcash/chains/models.py:1460 xcash/currencies/models.py:50
-#: xcash/currencies/models.py:237 xcash/invoices/admin.py:225
-#: xcash/invoices/models.py:151
-msgid "加密货币"
-msgstr "Crypto"
-
-#: config/settings/unfold.py:128
-msgid "法定货币"
-msgstr "Fiat Currency"
-
-#: config/settings/unfold.py:135 xcash/chains/models.py:838
-#: xcash/deposits/admin.py:60 xcash/invoices/models.py:57
-#: xcash/invoices/models.py:121 xcash/invoices/models.py:592
-#: xcash/projects/apps.py:8 xcash/projects/models.py:113
-#: xcash/projects/models.py:269 xcash/templates/admin/index.html:84
-#: xcash/users/admin.py:62 xcash/webhooks/admin.py:182
+#: config/settings/unfold.py:127 xcash/chains/models.py:839
+#: xcash/deposits/admin.py:121 xcash/invoices/models.py:57
+#: xcash/invoices/models.py:123 xcash/invoices/models.py:593
+#: xcash/projects/admin.py:354 xcash/projects/apps.py:8
+#: xcash/projects/models.py:113 xcash/projects/models.py:269
+#: xcash/templates/admin/index.html:106 xcash/webhooks/admin.py:306
 #: xcash/webhooks/models.py:21
 msgid "项目"
 msgstr "Project"
 
-#: config/settings/unfold.py:139
+#: config/settings/unfold.py:131
 msgid "项目列表"
 msgstr "Project List"
 
-#: config/settings/unfold.py:146
+#: config/settings/unfold.py:136 xcash/chains/models.py:846
+#: xcash/deposits/models.py:13 xcash/projects/models.py:286
+msgid "客户"
+msgstr "Customer"
+
+#: config/settings/unfold.py:141 xcash/invoices/models.py:72
+#: xcash/projects/admin.py:200 xcash/projects/admin.py:201
+msgid "钱包直收地址"
+msgstr "Direct Wallet Address"
+
+#: config/settings/unfold.py:150
 msgid "账单"
 msgstr "Invoice"
 
-#: config/settings/unfold.py:150
+#: config/settings/unfold.py:154
 msgid "账单记录"
 msgstr "Invoice Records"
 
-#: config/settings/unfold.py:155
+#: config/settings/unfold.py:159
 msgid "账单合约"
 msgstr "Invoice Contracts"
 
-#: config/settings/unfold.py:164
+#: config/settings/unfold.py:168 xcash/deposits/admin.py:62
 msgid "充值"
 msgstr "Deposits"
 
-#: config/settings/unfold.py:168
+#: config/settings/unfold.py:172
 msgid "充值记录"
 msgstr "Deposit Records"
 
-#: config/settings/unfold.py:173
+#: config/settings/unfold.py:177
 msgid "充值合约"
 msgstr "Deposit Contracts"
 
-#: config/settings/unfold.py:182 xcash/projects/admin.py:303
-#: xcash/webhooks/apps.py:8
+#: config/settings/unfold.py:186 xcash/projects/admin.py:340
+#: xcash/projects/admin.py:380 xcash/webhooks/apps.py:8
 msgid "通知"
 msgstr "Notifications"
 
-#: config/settings/unfold.py:186 xcash/invoices/models.py:704
+#: config/settings/unfold.py:190 xcash/invoices/models.py:705
 msgid "通知事件"
 msgstr "Notification"
 
-#: config/settings/unfold.py:191 xcash/webhooks/models.py:117
+#: config/settings/unfold.py:195 xcash/webhooks/models.py:126
 msgid "投递日志"
 msgstr "Delivery Logs"
 
-#: config/settings/unfold.py:200
+#: config/settings/unfold.py:204 xcash/chains/apps.py:8
 msgid "区块链"
 msgstr "Block Chain"
 
-#: config/settings/unfold.py:204
+#: config/settings/unfold.py:208
 msgid "公链"
 msgstr "Chains"
 
-#: config/settings/unfold.py:209 xcash/deposits/models.py:18
-#: xcash/invoices/models.py:188
+#: config/settings/unfold.py:213 xcash/deposits/models.py:18
+#: xcash/invoices/models.py:192
 msgid "链上转账"
 msgstr "On-chain transfer"
 
-#: config/settings/unfold.py:214
+#: config/settings/unfold.py:218
+msgid "上链任务"
+msgstr "On-chain Tasks"
+
+#: config/settings/unfold.py:223 xcash/chains/admin.py:428
+#: xcash/chains/admin.py:429
+msgid "归集计划"
+msgstr "Sweep Schedules"
+
+#: config/settings/unfold.py:233
+msgid "链适配"
+msgstr "Chain Adapters"
+
+#: config/settings/unfold.py:237
 msgid "EVM 上链任务"
 msgstr "EVM On-chain Tasks"
 
-#: config/settings/unfold.py:219
-msgid "Tron 上链任务"
-msgstr "Tron On-chain Tasks"
-
-#: config/settings/unfold.py:224 xcash/evm/models.py:60
+#: config/settings/unfold.py:242 xcash/evm/models.py:60
 msgid "EVM 扫描游标"
 msgstr "EVM Scan Cursors"
 
-#: config/settings/unfold.py:229 xcash/tron/models.py:76
+#: config/settings/unfold.py:247
+msgid "Tron 上链任务"
+msgstr "Tron On-chain Tasks"
+
+#: config/settings/unfold.py:252 xcash/tron/models.py:77
 msgid "Tron 扫描游标"
 msgstr "Tron Scan Cursors"
 
-#: config/settings/unfold.py:236
-msgid "任务"
-msgstr "Tasks"
+#: config/settings/unfold.py:257 xcash/chains/models.py:347
+#: xcash/chains/models.py:348 xcash/chains/models.py:467
+msgid "钱包"
+msgstr "Wallet"
 
-#: config/settings/unfold.py:240
+#: config/settings/unfold.py:262
+msgid "派生地址"
+msgstr "Derived Addresses"
+
+#: config/settings/unfold.py:269 xcash/currencies/apps.py:8
+msgid "货币"
+msgstr "Currency"
+
+#: config/settings/unfold.py:273 xcash/chains/admin.py:307
+#: xcash/chains/models.py:1491 xcash/currencies/admin.py:84
+#: xcash/currencies/models.py:64 xcash/currencies/models.py:271
+#: xcash/invoices/admin.py:323 xcash/invoices/models.py:153
+msgid "加密货币"
+msgstr "Crypto"
+
+#: config/settings/unfold.py:278 xcash/currencies/admin.py:150
+msgid "法定货币"
+msgstr "Fiat Currency"
+
+#: config/settings/unfold.py:285 xcash/deposits/admin.py:89
+#: xcash/invoices/admin.py:216
+msgid "风控"
+msgstr "Risk Control"
+
+#: config/settings/unfold.py:289
+msgid "风险评估"
+msgstr "Risk Assessments"
+
+#: config/settings/unfold.py:296
+msgid "运维"
+msgstr "Operations"
+
+#: config/settings/unfold.py:300
 msgid "任务日志"
 msgstr "Task Logs"
 
-#: xcash/aml/admin.py:47
-#| msgid "目标类型"
-msgid "目标"
-msgstr "Target"
+#: config/settings/unfold.py:307 xcash/users/admin.py:104
+msgid "后台用户"
+msgstr "Admin Users"
 
-#: xcash/aml/admin.py:59
+#: config/settings/unfold.py:312
+msgid "权限组"
+msgstr "Groups"
+
+#: config/settings/unfold.py:317
+msgid "API Token"
+msgstr "API Tokens"
+
+#: xcash/aml/admin.py:41
+msgid "支持按地址、交易哈希、账单单号或充值单号搜索"
+msgstr "Search by address, transaction hash, invoice number or deposit number"
+
+#: xcash/aml/admin.py:60 xcash/aml/admin.py:97
+msgid "筛查对象"
+msgstr "Screening Target"
+
+#: xcash/aml/admin.py:73
 msgid "风险结果"
 msgstr "Risk Result"
 
-#: xcash/aml/admin.py:71
-#| msgid "时间戳"
-msgid "时间"
-msgstr "Time"
+#: xcash/aml/admin.py:89 xcash/aml/admin.py:156
+msgid "原始响应"
+msgstr "Raw Response"
+
+#: xcash/aml/admin.py:102 xcash/aml/models.py:26 xcash/aml/models.py:54
+#: xcash/chains/models.py:819 xcash/invoices/apps.py:8
+#: xcash/invoices/models.py:229 xcash/invoices/models.py:230
+#: xcash/invoices/models.py:680
+msgid "账单收款"
+msgstr "Payments"
+
+#: xcash/aml/admin.py:104 xcash/aml/models.py:27 xcash/aml/models.py:62
+#: xcash/chains/models.py:818 xcash/deposits/apps.py:8
+#: xcash/deposits/models.py:45 xcash/deposits/models.py:46
+msgid "充值收款"
+msgstr "Recharge"
+
+#: xcash/aml/admin.py:108 xcash/chains/admin.py:401 xcash/chains/models.py:53
+#: xcash/chains/models.py:644 xcash/chains/models.py:1499
+#: xcash/currencies/admin.py:89 xcash/evm/admin.py:215 xcash/evm/admin.py:219
+#: xcash/tron/admin.py:146 xcash/tron/admin.py:150
+msgid "类型"
+msgstr "Type"
+
+#: xcash/aml/admin.py:119 xcash/deposits/admin.py:142
+#: xcash/invoices/admin.py:263
+msgid "风险"
+msgstr "Risk"
+
+#: xcash/aml/admin.py:134 xcash/aml/models.py:37
+msgid "查询状态"
+msgstr "Query Status"
+
+#: xcash/aml/admin.py:144
+msgid "地址 / 哈希"
+msgstr "Address / Hash"
+
+#: xcash/aml/admin.py:148 xcash/chains/admin.py:199 xcash/chains/admin.py:203
+#: xcash/chains/models.py:469 xcash/chains/models.py:489
+#: xcash/chains/models.py:490 xcash/invoices/models.py:65
+msgid "地址"
+msgstr "Address"
+
+#: xcash/aml/admin.py:152 xcash/aml/models.py:65 xcash/chains/admin.py:291
+#: xcash/chains/admin.py:323 xcash/chains/admin.py:405
+#: xcash/chains/admin.py:409 xcash/chains/models.py:587
+#: xcash/chains/models.py:649 xcash/deposits/admin.py:156
+#: xcash/stress/admin.py:416 xcash/stress/admin.py:500
+#: xcash/stress/models.py:114 xcash/stress/models.py:187
+msgid "交易哈希"
+msgstr "Hash"
+
+#: xcash/aml/admin.py:160 xcash/stress/models.py:68 xcash/stress/models.py:132
+#: xcash/stress/models.py:209
+msgid "错误信息"
+msgstr "Error Message"
 
 #: xcash/aml/models.py:9
 msgid "QuickNode MistTrack"
@@ -211,24 +319,9 @@ msgstr "Query Successful"
 msgid "查询失败"
 msgstr "Query Failed"
 
-#: xcash/aml/models.py:26 xcash/aml/models.py:54 xcash/chains/models.py:818
-#: xcash/invoices/apps.py:8 xcash/invoices/models.py:225
-#: xcash/invoices/models.py:226 xcash/invoices/models.py:679
-msgid "账单收款"
-msgstr "Payments"
-
-#: xcash/aml/models.py:27 xcash/aml/models.py:62 xcash/chains/models.py:817
-#: xcash/deposits/models.py:45 xcash/deposits/models.py:46
-msgid "充值收款"
-msgstr "Recharge"
-
 #: xcash/aml/models.py:30
 msgid "数据来源"
 msgstr "Data Source"
-
-#: xcash/aml/models.py:37
-msgid "查询状态"
-msgstr "Query Status"
 
 #: xcash/aml/models.py:43
 msgid "目标类型"
@@ -238,19 +331,13 @@ msgstr "Target Type"
 msgid "查询地址"
 msgstr "Query Address"
 
-#: xcash/aml/models.py:65 xcash/chains/admin.py:234 xcash/chains/models.py:586
-#: xcash/chains/models.py:648 xcash/stress/models.py:114
-#: xcash/stress/models.py:181
-msgid "交易哈希"
-msgstr "Hash"
-
 #: xcash/aml/models.py:67 xcash/deposits/models.py:27
-#: xcash/invoices/models.py:198
+#: xcash/invoices/admin.py:331 xcash/invoices/models.py:202
 msgid "风险等级"
 msgstr "Risk Level"
 
 #: xcash/aml/models.py:75 xcash/deposits/models.py:35
-#: xcash/invoices/models.py:206
+#: xcash/invoices/models.py:210
 msgid "风险分数"
 msgstr "Risk Score"
 
@@ -258,7 +345,7 @@ msgstr "Risk Score"
 msgid "原始响应摘要"
 msgstr "Raw Response Summary"
 
-#: xcash/aml/models.py:82 xcash/evm/admin.py:275 xcash/tron/admin.py:194
+#: xcash/aml/models.py:82 xcash/evm/admin.py:380 xcash/tron/admin.py:324
 msgid "错误摘要"
 msgstr "Error Summary"
 
@@ -266,24 +353,24 @@ msgstr "Error Summary"
 msgid "查询完成时间"
 msgstr "Query Completed At"
 
-#: xcash/aml/models.py:84 xcash/chains/models.py:81 xcash/chains/models.py:476
-#: xcash/chains/models.py:593 xcash/chains/models.py:657
-#: xcash/chains/models.py:871 xcash/chains/models.py:1151
-#: xcash/chains/models.py:1490 xcash/core/models.py:151
-#: xcash/core/models.py:190 xcash/evm/models.py:50 xcash/evm/models.py:99
-#: xcash/invoices/models.py:68 xcash/invoices/models.py:220
-#: xcash/invoices/models.py:603 xcash/invoices/models.py:706
-#: xcash/projects/models.py:110 xcash/stress/models.py:70
-#: xcash/tron/models.py:66 xcash/tron/models.py:127 xcash/webhooks/models.py:65
-#: xcash/webhooks/models.py:113
+#: xcash/aml/models.py:84 xcash/chains/models.py:82 xcash/chains/models.py:477
+#: xcash/chains/models.py:594 xcash/chains/models.py:658
+#: xcash/chains/models.py:872 xcash/chains/models.py:1152
+#: xcash/chains/models.py:1521 xcash/core/models.py:159
+#: xcash/core/models.py:203 xcash/deposits/admin.py:160 xcash/evm/models.py:50
+#: xcash/evm/models.py:99 xcash/invoices/models.py:68
+#: xcash/invoices/models.py:224 xcash/invoices/models.py:604
+#: xcash/invoices/models.py:707 xcash/projects/models.py:110
+#: xcash/stress/models.py:70 xcash/tron/models.py:67 xcash/tron/models.py:134
+#: xcash/webhooks/models.py:74 xcash/webhooks/models.py:122
 msgid "创建时间"
 msgstr "Created At"
 
-#: xcash/aml/models.py:85 xcash/chains/models.py:658
-#: xcash/chains/models.py:1099 xcash/chains/models.py:1152
-#: xcash/core/models.py:152 xcash/core/models.py:191 xcash/evm/models.py:49
-#: xcash/invoices/models.py:221 xcash/invoices/models.py:604
-#: xcash/invoices/models.py:707 xcash/tron/models.py:65
+#: xcash/aml/models.py:85 xcash/chains/models.py:659
+#: xcash/chains/models.py:1100 xcash/chains/models.py:1153
+#: xcash/core/models.py:160 xcash/core/models.py:204 xcash/evm/models.py:49
+#: xcash/invoices/models.py:225 xcash/invoices/models.py:605
+#: xcash/invoices/models.py:708 xcash/tron/models.py:66
 msgid "更新时间"
 msgstr "Updated at"
 
@@ -291,405 +378,495 @@ msgstr "Updated at"
 msgid "AML 评估"
 msgstr "AML Assessment"
 
-#: xcash/aml/models.py:130
+#: xcash/aml/models.py:124
 msgid "AML 评估必须且只能关联一个业务目标。"
 msgstr "An AML assessment must be linked to exactly one business target."
 
-#: xcash/chains/admin.py:57 xcash/currencies/models.py:28
-#: xcash/stress/models.py:40
-msgid "名称"
-msgstr "Name"
+#: xcash/chains/admin.py:71
+msgid "支持按链代码搜索"
+msgstr "Search by chain code"
 
-#: xcash/chains/admin.py:61 xcash/chains/models.py:47
-#: xcash/currencies/models.py:29 xcash/currencies/models.py:337
-msgid "代码"
-msgstr "Code"
-
-#: xcash/chains/admin.py:65 xcash/currencies/admin.py:51
-#: xcash/currencies/models.py:47
-#: xcash/templates/admin/core/systemwallet/change_form.html:84
-msgid "原生币"
-msgstr "Native Coin"
-
-#: xcash/chains/admin.py:71 xcash/projects/admin.py:328
-msgid "环境"
-msgstr "Environment"
-
-#: xcash/chains/admin.py:80
-msgid "本地"
-msgstr "Local"
-
-#: xcash/chains/admin.py:81 xcash/chains/models.py:59
-#: xcash/templates/admin/core/systemwallet/change_form.html:95
-msgid "测试网"
-msgstr "Testnet"
-
-#: xcash/chains/admin.py:81
-msgid "主网"
-msgstr "Mainnet"
-
-#: xcash/chains/admin.py:83
-msgid "RPC 域名"
-msgstr "RPC Domain"
-
-#: xcash/chains/admin.py:87
-msgid "区块确认数"
-msgstr "Block Confirmations"
-
-#: xcash/chains/admin.py:93 xcash/invoices/admin.py:120
-#: xcash/projects/admin.py:252 xcash/projects/admin.py:272
-#: xcash/webhooks/admin.py:68 xcash/webhooks/admin.py:149
-msgid "基本信息"
-msgstr "Info"
-
-#: xcash/chains/admin.py:190 xcash/chains/models.py:88
-#: xcash/chains/models.py:89 xcash/chains/models.py:584
-#: xcash/chains/models.py:640 xcash/chains/models.py:828
-#: xcash/chains/models.py:1063 xcash/chains/models.py:1136
-#: xcash/chains/models.py:1445 xcash/currencies/models.py:243
-#: xcash/deposits/admin.py:64 xcash/evm/models.py:43
-#: xcash/invoices/admin.py:229 xcash/invoices/models.py:158
-#: xcash/stress/models.py:104 xcash/stress/models.py:173
-#: xcash/templates/admin/core/systemwallet/change_form.html:83
-#: xcash/tron/models.py:59
+#: xcash/chains/admin.py:73 xcash/chains/admin.py:311 xcash/chains/models.py:89
+#: xcash/chains/models.py:90 xcash/chains/models.py:585
+#: xcash/chains/models.py:641 xcash/chains/models.py:829
+#: xcash/chains/models.py:1064 xcash/chains/models.py:1137
+#: xcash/chains/models.py:1476 xcash/currencies/models.py:277
+#: xcash/evm/models.py:43 xcash/invoices/admin.py:327
+#: xcash/invoices/models.py:160 xcash/stress/models.py:104
+#: xcash/stress/models.py:179
+#: xcash/templates/admin/core/systemwallet/change_form.html:81
+#: xcash/tron/models.py:60
 msgid "链"
 msgstr "Chain"
 
-#: xcash/chains/admin.py:195 xcash/chains/admin.py:239
-#: xcash/chains/models.py:653 xcash/chains/models.py:1486
-#: xcash/deposits/admin.py:50 xcash/evm/admin.py:158
-#: xcash/invoices/admin.py:173 xcash/invoices/models.py:195
-#: xcash/stress/models.py:52 xcash/stress/models.py:127
-#: xcash/stress/models.py:198 xcash/tron/admin.py:64
+#: xcash/chains/admin.py:77 xcash/currencies/admin.py:98
+#: xcash/currencies/models.py:61
+#: xcash/templates/admin/core/systemwallet/change_form.html:82
+msgid "原生币"
+msgstr "Native Coin"
+
+#: xcash/chains/admin.py:83 xcash/projects/admin.py:370
+msgid "环境"
+msgstr "Environment"
+
+#: xcash/chains/admin.py:92
+msgid "本地"
+msgstr "Local"
+
+#: xcash/chains/admin.py:93 xcash/chains/models.py:60
+#: xcash/templates/admin/core/systemwallet/change_form.html:93
+msgid "测试网"
+msgstr "Testnet"
+
+#: xcash/chains/admin.py:93
+msgid "主网"
+msgstr "Mainnet"
+
+#: xcash/chains/admin.py:95
+msgid "RPC 域名"
+msgstr "RPC Domain"
+
+#: xcash/chains/admin.py:99
+msgid "确认数"
+msgstr "Confirmations"
+
+#: xcash/chains/admin.py:103 xcash/chains/models.py:66
+msgid "最新区块"
+msgstr "Latest Block"
+
+#: xcash/chains/admin.py:109 xcash/currencies/admin.py:48
+#: xcash/projects/admin.py:279 xcash/projects/admin.py:302
+msgid "基本信息"
+msgstr "Info"
+
+#: xcash/chains/admin.py:117
+msgid "链类型、原生币与区块确认数由链代码对应的内置 spec 决定，不在后台维护。"
+msgstr ""
+"Chain type, native coin and confirmation depth come from the built-in spec "
+"bound to the chain code; they are not editable here."
+
+#: xcash/chains/admin.py:165
+msgid "派生地址数"
+msgstr "Derived Addresses"
+
+#: xcash/chains/admin.py:187
+msgid "支持按地址搜索"
+msgstr "Search by address"
+
+#: xcash/chains/admin.py:207 xcash/chains/models.py:471
+#: xcash/chains/models.py:831
+msgid "用途"
+msgstr "Purpose"
+
+#: xcash/chains/admin.py:219
+msgid "支持按交易哈希、付款地址或收款地址搜索"
+msgstr "Search by transaction hash, sender address or recipient address"
+
+#: xcash/chains/admin.py:250 xcash/chains/models.py:1525
+#: xcash/chains/models.py:1526
+msgid "转账"
+msgstr "Transfer"
+
+#: xcash/chains/admin.py:266
+msgid "收付双方"
+msgstr "Counterparties"
+
+#: xcash/chains/admin.py:276
+msgid "链上位置"
+msgstr "On-chain Position"
+
+#: xcash/chains/admin.py:295
+msgid "付款 → 收款"
+msgstr "From → To"
+
+#: xcash/chains/admin.py:303 xcash/chains/models.py:1496
+msgid "数量"
+msgstr "Amount"
+
+#: xcash/chains/admin.py:315 xcash/stress/models.py:113
+#: xcash/stress/models.py:186
+msgid "付款地址"
+msgstr "Payment Address"
+
+#: xcash/chains/admin.py:319 xcash/chains/admin.py:491
+#: xcash/chains/admin.py:495 xcash/chains/models.py:853
+#: xcash/chains/models.py:904 xcash/chains/models.py:1062
+#: xcash/chains/models.py:1135 xcash/invoices/admin.py:96
+#: xcash/invoices/admin.py:114
+msgid "收款地址"
+msgstr "Receiving Address"
+
+#: xcash/chains/admin.py:327 xcash/chains/models.py:1479
+msgid "区块哈希"
+msgstr "Block Hash"
+
+#: xcash/chains/admin.py:332 xcash/chains/admin.py:547
+#: xcash/chains/admin.py:585
+msgid "归属"
+msgstr "Ownership"
+
+#: xcash/chains/admin.py:344 xcash/chains/admin.py:413
+#: xcash/chains/models.py:654 xcash/chains/models.py:1517
+#: xcash/core/admin.py:108 xcash/deposits/admin.py:105
+#: xcash/deposits/admin.py:116 xcash/evm/admin.py:208 xcash/evm/admin.py:225
+#: xcash/invoices/admin.py:251 xcash/invoices/models.py:199
+#: xcash/stress/admin.py:245 xcash/stress/admin.py:408
+#: xcash/stress/admin.py:492 xcash/stress/models.py:52
+#: xcash/stress/models.py:127 xcash/stress/models.py:204
+#: xcash/tron/admin.py:126 xcash/tron/admin.py:156 xcash/webhooks/admin.py:177
 #: xcash/webhooks/models.py:43
 msgid "状态"
 msgstr "Status"
 
-#: xcash/chains/admin.py:222 xcash/chains/models.py:635
-#: xcash/chains/models.py:1462 xcash/evm/admin.py:173 xcash/evm/models.py:78
-#: xcash/tron/admin.py:92 xcash/tron/models.py:99
+#: xcash/chains/admin.py:377
+msgid "支持按交易哈希或发送地址搜索"
+msgstr "Search by transaction hash or sender address"
+
+#: xcash/chains/admin.py:389 xcash/chains/admin.py:393
+#: xcash/chains/models.py:636 xcash/chains/models.py:1493
+#: xcash/evm/admin.py:233 xcash/evm/admin.py:237 xcash/evm/models.py:78
+#: xcash/tron/admin.py:166 xcash/tron/admin.py:170 xcash/tron/models.py:100
 msgid "发送地址"
 msgstr "From Address"
 
-#: xcash/chains/admin.py:226 xcash/evm/admin.py:177 xcash/evm/admin.py:226
-#: xcash/evm/models.py:83 xcash/tron/admin.py:96 xcash/tron/admin.py:146
-#: xcash/tron/models.py:104
+#: xcash/chains/admin.py:397 xcash/deposits/admin.py:125 xcash/evm/admin.py:229
+#: xcash/evm/admin.py:328 xcash/evm/models.py:83 xcash/invoices/admin.py:302
+#: xcash/tron/admin.py:194 xcash/tron/admin.py:273 xcash/tron/models.py:105
 msgid "网络"
 msgstr "Network"
 
-#: xcash/chains/admin.py:230 xcash/chains/models.py:52
-#: xcash/chains/models.py:643 xcash/chains/models.py:1468
-#: xcash/currencies/admin.py:43 xcash/evm/admin.py:169 xcash/tron/admin.py:88
-msgid "类型"
-msgstr "Type"
+#: xcash/chains/admin.py:448 xcash/chains/admin.py:449
+msgid "余额快照"
+msgstr "Balance Snapshots"
 
-#: xcash/chains/admin.py:372
+#: xcash/chains/admin.py:505
+msgid "部署"
+msgstr "Deployment"
+
+#: xcash/chains/admin.py:511
+msgid "已部署"
+msgstr "Deployed"
+
+#: xcash/chains/admin.py:511
+msgid "未部署"
+msgstr "Not deployed"
+
+#: xcash/chains/admin.py:515
+msgid "收款"
+msgstr "Receipt"
+
+#: xcash/chains/admin.py:520
+msgid "有过入账"
+msgstr "Funded"
+
+#: xcash/chains/admin.py:520
+msgid "空"
+msgstr "Empty"
+
+#: xcash/chains/admin.py:543
+msgid "支持按客户 UID、项目名称或合约地址搜索"
+msgstr "Search by customer UID, project name or contract address"
+
+#: xcash/chains/admin.py:554 xcash/chains/admin.py:592
+msgid "合约"
+msgstr "Contract"
+
+#: xcash/chains/admin.py:581
+msgid "支持按项目名称或合约地址搜索"
+msgstr "Search by project name or contract address"
+
+#: xcash/chains/admin.py:626
+msgid "支持按收款合约地址或归集交易哈希搜索"
+msgstr "Search by receiving contract address or sweep transaction hash"
+
+#: xcash/chains/admin.py:640
+msgid "收款合约"
+msgstr "Receiving Contract"
+
+#: xcash/chains/admin.py:645 xcash/chains/admin.py:661
+msgid "进度"
+msgstr "Progress"
+
+#: xcash/chains/admin.py:658 xcash/chains/admin.py:666
+msgid "待到期"
+msgstr "Awaiting window"
+
+#: xcash/chains/admin.py:676
 msgid "重新排队失败的归集计划"
 msgstr "Requeue failed collection schedules"
 
-#: xcash/chains/admin.py:388
+#: xcash/chains/admin.py:692
 #, python-format
 msgid "已重新排队 %(requeued)d 个失败归集计划，跳过 %(skipped)d 个非失败计划。"
 msgstr ""
 "Requeued %(requeued)d failed collection schedules and skipped %(skipped)d "
 "non-failed schedules."
 
-#: xcash/chains/models.py:56 xcash/chains/models.py:62
+#: xcash/chains/models.py:48 xcash/currencies/models.py:32
+#: xcash/currencies/models.py:373
+msgid "代码"
+msgstr "Code"
+
+#: xcash/chains/models.py:57 xcash/chains/models.py:63
 msgid "由 code 常量自动决定，不可手动修改。"
 msgstr ""
 "Automatically determined by the code constant and cannot be changed manually."
 
-#: xcash/chains/models.py:65
-msgid "最新区块"
-msgstr "Latest Block"
-
-#: xcash/chains/models.py:67 xcash/invoices/models.py:67
+#: xcash/chains/models.py:68 xcash/invoices/models.py:67
 msgid "排序序号"
 msgstr "Sort Order"
 
-#: xcash/chains/models.py:68 xcash/currencies/models.py:45
-#: xcash/currencies/models.py:250 xcash/evm/admin.py:231 xcash/evm/models.py:46
-#: xcash/invoices/models.py:66 xcash/invoices/models.py:602
-#: xcash/projects/models.py:101 xcash/tron/admin.py:151 xcash/tron/models.py:62
+#: xcash/chains/models.py:69 xcash/currencies/models.py:59
+#: xcash/currencies/models.py:284 xcash/evm/admin.py:333 xcash/evm/models.py:46
+#: xcash/invoices/models.py:66 xcash/invoices/models.py:603
+#: xcash/projects/models.py:101 xcash/tron/admin.py:278 xcash/tron/models.py:63
 msgid "启用"
 msgstr "Enabled"
 
-#: xcash/chains/models.py:72
+#: xcash/chains/models.py:73
 msgid "EVM 单次日志请求最大区块数"
 msgstr "Max Blocks per EVM Log Request"
 
-#: xcash/chains/models.py:74
+#: xcash/chains/models.py:75
 msgid "EVM 扫描器单次 eth_getLogs 请求允许覆盖的最大区块数。"
 msgstr ""
 "The maximum block range allowed for a single eth_getLogs request by the EVM "
 "scanner."
 
-#: xcash/chains/models.py:76
+#: xcash/chains/models.py:77
 msgid "RPC"
 msgstr "RPC"
 
-#: xcash/chains/models.py:79
+#: xcash/chains/models.py:80
 msgid "Tron API Key"
 msgstr "Tron API Key"
 
-#: xcash/chains/models.py:85
+#: xcash/chains/models.py:86
 msgid "最近扫描时间"
 msgstr "Last Scan Time"
 
-#: xcash/chains/models.py:265
+#: xcash/chains/models.py:266
 #, python-format
 msgid "RPC 连接失败：%(err)s"
 msgstr "RPC connection failed: %(err)s"
 
-#: xcash/chains/models.py:271
+#: xcash/chains/models.py:272
 #, python-format
 msgid "RPC chain_id 与所选链不匹配：期望 %(expected)s，实际 %(actual)s"
 msgstr ""
 "RPC chain_id does not match the selected chain: expected %(expected)s, got "
 "%(actual)s"
 
-#: xcash/chains/models.py:331
+#: xcash/chains/models.py:332
 msgid "热钱包"
 msgstr "Hot Wallet"
 
-#: xcash/chains/models.py:343
+#: xcash/chains/models.py:344
 msgid "加密助记词"
 msgstr "Encrypted Mnemonic"
 
-#: xcash/chains/models.py:346 xcash/chains/models.py:347
-#: xcash/chains/models.py:466
-msgid "钱包"
-msgstr "Wallet"
-
-#: xcash/chains/models.py:468 xcash/chains/models.py:488
-#: xcash/chains/models.py:489 xcash/invoices/models.py:65
-msgid "地址"
-msgstr "Address"
-
-#: xcash/chains/models.py:469 xcash/invoices/models.py:60
-#: xcash/templates/admin/core/systemwallet/change_form.html:36
+#: xcash/chains/models.py:470 xcash/invoices/admin.py:119
+#: xcash/invoices/models.py:60
+#: xcash/templates/admin/core/systemwallet/change_form.html:34
 msgid "链类型"
 msgstr "Chain Type"
 
-#: xcash/chains/models.py:470 xcash/chains/models.py:830
-msgid "用途"
-msgstr "Purpose"
-
-#: xcash/chains/models.py:472
+#: xcash/chains/models.py:473
 msgid "BIP44 账户层级"
 msgstr "BIP44 Account Level"
 
-#: xcash/chains/models.py:474
+#: xcash/chains/models.py:475
 msgid "地址索引"
 msgstr "Address Index"
 
-#: xcash/chains/models.py:548
+#: xcash/chains/models.py:549
 msgid "🏦 VaultSlot 部署"
 msgstr "🏦 VaultSlot Deployment"
 
-#: xcash/chains/models.py:549
-#| msgid "EVM VaultSlot 归集延迟(分钟)"
+#: xcash/chains/models.py:550
 msgid "💰 VaultSlot 归集"
 msgstr "💰 VaultSlot Collection"
 
-#: xcash/chains/models.py:555
+#: xcash/chains/models.py:556
 msgid "未归类"
 msgstr "Unclassified"
 
-#: xcash/chains/models.py:556
+#: xcash/chains/models.py:557
 msgid "💳 账单收款"
 msgstr "💳 Invoice Payment"
 
-#: xcash/chains/models.py:557
+#: xcash/chains/models.py:558
 msgid "💰 充值收款"
 msgstr "💰 Deposit"
 
-#: xcash/chains/models.py:561
+#: xcash/chains/models.py:562
 msgid "待提交"
 msgstr "Queued"
 
-#: xcash/chains/models.py:562
+#: xcash/chains/models.py:563
 msgid "已提交"
 msgstr "Submitted"
 
-#: xcash/chains/models.py:563 xcash/stress/models.py:23
+#: xcash/chains/models.py:564 xcash/stress/models.py:23
 #: xcash/stress/models.py:34 xcash/stress/models.py:65
-#: xcash/webhooks/models.py:108
+#: xcash/webhooks/admin.py:316 xcash/webhooks/models.py:117
 msgid "成功"
 msgstr "Success"
 
-#: xcash/chains/models.py:564 xcash/stress/models.py:24
+#: xcash/chains/models.py:565 xcash/stress/models.py:24
 #: xcash/stress/models.py:35 xcash/stress/models.py:66
+#: xcash/webhooks/admin.py:316
 msgid "失败"
 msgstr "Failed"
 
-#: xcash/chains/models.py:578 xcash/chains/models.py:668
-#: xcash/chains/models.py:1149 xcash/evm/models.py:112
+#: xcash/chains/models.py:579 xcash/chains/models.py:669
+#: xcash/chains/models.py:1150 xcash/evm/models.py:112
 msgid "链上任务"
 msgstr "On-chain Task"
 
-#: xcash/chains/models.py:587
+#: xcash/chains/models.py:588
 msgid "版本"
 msgstr "Version"
 
-#: xcash/chains/models.py:589 xcash/tron/models.py:110
+#: xcash/chains/models.py:590 xcash/tron/models.py:112
 msgid "过期时间(ms)"
 msgstr "Expiration Time (ms)"
 
-#: xcash/chains/models.py:607
+#: xcash/chains/models.py:608
 msgid "交易哈希历史"
 msgstr "Transaction Hash History"
 
-#: xcash/chains/models.py:617
+#: xcash/chains/models.py:618
 msgid "TxHash.chain 必须与 TxTask.chain 保持一致。"
 msgstr "TxHash.chain must match TxTask.chain."
 
-#: xcash/chains/models.py:845 xcash/deposits/models.py:13
-#: xcash/projects/models.py:286
-msgid "客户"
-msgstr "Customer"
-
-#: xcash/chains/models.py:848
+#: xcash/chains/models.py:849
 msgid "账单槽位序号"
 msgstr "Invoice Slot Index"
 
-#: xcash/chains/models.py:852 xcash/chains/models.py:903
-#: xcash/chains/models.py:1061 xcash/chains/models.py:1134
-msgid "收款地址"
-msgstr "Receiving Address"
-
-#: xcash/chains/models.py:853
+#: xcash/chains/models.py:854
 msgid "CREATE2 Salt"
 msgstr "CREATE2 Salt"
 
-#: xcash/chains/models.py:860
+#: xcash/chains/models.py:861
 msgid "部署交易任务"
 msgstr "Deployment Task"
 
-#: xcash/chains/models.py:863
+#: xcash/chains/models.py:864
 msgid "是否已部署"
 msgstr "Deployed"
 
-#: xcash/chains/models.py:865
+#: xcash/chains/models.py:866
 msgid "链上观测到该 VaultSlot 合约 code。"
 msgstr "VaultSlot contract code was observed on-chain."
 
-#: xcash/chains/models.py:868
+#: xcash/chains/models.py:869
 msgid "是否收到过资金"
 msgstr "Has Received Funds"
 
-#: xcash/chains/models.py:1067 xcash/chains/models.py:1140
-#: xcash/deposits/admin.py:68 xcash/stress/models.py:103
-#: xcash/stress/models.py:172
+#: xcash/chains/models.py:1068 xcash/chains/models.py:1141
+#: xcash/stress/models.py:103 xcash/stress/models.py:178
 msgid "币种"
 msgstr "Currency"
 
-#: xcash/chains/models.py:1070
+#: xcash/chains/models.py:1071
 msgid "链上最小单位余额"
 msgstr "Balance in On-chain Base Units"
 
-#: xcash/chains/models.py:1076
-#: xcash/templates/admin/core/systemwallet/change_form.html:85
+#: xcash/chains/models.py:1077
+#: xcash/templates/admin/core/systemwallet/change_form.html:83
 msgid "余额"
 msgstr "Balance"
 
-#: xcash/chains/models.py:1082 xcash/deposits/models.py:21
-#: xcash/invoices/models.py:180
+#: xcash/chains/models.py:1083 xcash/deposits/models.py:21
+#: xcash/invoices/models.py:184
 msgid "价值(USD)"
 msgstr "Value (USD)"
 
-#: xcash/chains/models.py:1088
+#: xcash/chains/models.py:1089
 msgid "同步区块"
 msgstr "Synced Block"
 
-#: xcash/chains/models.py:1092
+#: xcash/chains/models.py:1093
 msgid "同步时间"
 msgstr "Synced At"
 
-#: xcash/chains/models.py:1094
+#: xcash/chains/models.py:1095
 msgid "最近触发交易"
 msgstr "Latest Trigger Transaction"
 
-#: xcash/chains/models.py:1109
+#: xcash/chains/models.py:1110
 msgid "收款地址余额"
 msgstr "Receiving Address Balance"
 
-#: xcash/chains/models.py:1119
+#: xcash/chains/models.py:1120
 msgid "余额所属链必须与 VaultSlot.chain 一致。"
 msgstr "Balance chain must match VaultSlot.chain."
 
-#: xcash/chains/models.py:1142
+#: xcash/chains/models.py:1143
 msgid "计划执行时间"
 msgstr "Scheduled At"
 
-#: xcash/chains/models.py:1163
+#: xcash/chains/models.py:1164
 msgid "收款地址归集计划"
 msgstr "Receiving Address Collection Schedule"
 
-#: xcash/chains/models.py:1418 xcash/stress/models.py:174
+#: xcash/chains/models.py:1449 xcash/stress/models.py:180
 msgid "充值收款地址"
 msgstr "Deposit Address"
 
-#: xcash/chains/models.py:1425 xcash/invoices/models.py:169
+#: xcash/chains/models.py:1456 xcash/invoices/models.py:171
 #: xcash/stress/models.py:105
 msgid "账单收款地址"
 msgstr "Payment address"
 
-#: xcash/chains/models.py:1430
+#: xcash/chains/models.py:1461
 msgid "确认中"
 msgstr "Confirming"
 
-#: xcash/chains/models.py:1431
+#: xcash/chains/models.py:1462
 msgid "已确认"
 msgstr "Confirmed"
 
-#: xcash/chains/models.py:1435
+#: xcash/chains/models.py:1466
 msgid "完全"
 msgstr "Full"
 
-#: xcash/chains/models.py:1436
+#: xcash/chains/models.py:1467
 msgid "快速"
 msgstr "Quick"
 
-#: xcash/chains/models.py:1446
+#: xcash/chains/models.py:1477
 msgid "区块高度"
 msgstr "Block Height"
 
-#: xcash/chains/models.py:1448
-msgid "区块哈希"
-msgstr "Block Hash"
-
-#: xcash/chains/models.py:1451 xcash/common/fields.py:18
+#: xcash/chains/models.py:1482 xcash/common/fields.py:18
 msgid "哈希"
 msgstr "Hash"
 
-#: xcash/chains/models.py:1453
+#: xcash/chains/models.py:1484
 msgid "交易内事件序号"
 msgstr "Event Index in Transaction"
 
-#: xcash/chains/models.py:1456
+#: xcash/chains/models.py:1487
 msgid "同一笔链上交易内第几条入账事件；旧数据或手工记录可为空。"
 msgstr ""
 "The ordinal position of this deposit event within the same on-chain "
 "transaction; may be empty for legacy or manual records."
 
-#: xcash/chains/models.py:1463
+#: xcash/chains/models.py:1494
 msgid "目的地址"
 msgstr "To Address"
 
-#: xcash/chains/models.py:1464
+#: xcash/chains/models.py:1495
 msgid "数值"
 msgstr "Value"
 
-#: xcash/chains/models.py:1465 xcash/deposits/admin.py:72
-msgid "数量"
-msgstr "Amount"
-
-#: xcash/chains/models.py:1476
+#: xcash/chains/models.py:1507
 msgid "确认模式"
 msgstr "Confirm mode"
 
-#: xcash/chains/models.py:1478
+#: xcash/chains/models.py:1509
 msgid ""
 "当前仅 Invoice 业务根据 fast_confirm_threshold 动态设置 QUICK/FULL；Deposit "
 "始终使用默认 FULL，走完整区块确认流程。"
@@ -698,21 +875,70 @@ msgstr ""
 "fast_confirm_threshold; Deposit always uses the default FULL mode and "
 "follows the full block confirmation flow."
 
-#: xcash/chains/models.py:1481
+#: xcash/chains/models.py:1512
 msgid "时间戳"
 msgstr "Timestamp"
 
-#: xcash/chains/models.py:1482
+#: xcash/chains/models.py:1513
 msgid "日期"
 msgstr "Date"
 
-#: xcash/chains/models.py:1489
+#: xcash/chains/models.py:1520
 msgid "处理时间"
 msgstr "Processing Time"
 
-#: xcash/chains/models.py:1494 xcash/chains/models.py:1495
-msgid "转账"
-msgstr "Transfer"
+#: xcash/common/admin_scan_cursor.py:26
+msgid "严重"
+msgstr "Severe"
+
+#: xcash/common/admin_scan_cursor.py:28
+msgid "轻微"
+msgstr "Minor"
+
+#: xcash/common/admin_scan_cursor.py:29 xcash/evm/admin.py:359
+#: xcash/templates/admin/operational_inspection.html:56 xcash/tron/admin.py:316
+#: xcash/webhooks/admin.py:25 xcash/webhooks/admin.py:208
+msgid "正常"
+msgstr "Normal"
+
+#: xcash/common/admin_scan_cursor.py:46
+msgid "启用所选扫描游标"
+msgstr "Enable selected scan cursors"
+
+#: xcash/common/admin_scan_cursor.py:53 xcash/common/admin_scan_cursor.py:74
+#: xcash/common/admin_scan_cursor.py:97
+msgid "未选中任何扫描游标"
+msgstr "No scan cursor selected"
+
+#: xcash/common/admin_scan_cursor.py:62
+#, python-format
+msgid "已启用 %(count)d 个扫描游标"
+msgstr "Enabled %(count)d scan cursors"
+
+#: xcash/common/admin_scan_cursor.py:67
+msgid "暂停所选扫描游标"
+msgstr "Pause selected scan cursors"
+
+#: xcash/common/admin_scan_cursor.py:83
+#, python-format
+msgid "已暂停 %(count)d 个扫描游标"
+msgstr "Paused %(count)d scan cursors"
+
+#: xcash/common/admin_scan_cursor.py:88
+msgid "追平到最新区块"
+msgstr "Sync to latest block"
+
+#: xcash/common/admin_scan_cursor.py:117
+#, python-format
+msgid "%(chain)s 获取最新区块失败，已跳过 %(count)d 个扫描游标：%(err)s"
+msgstr ""
+"Failed to read the latest block for %(chain)s, skipped %(count)d scan "
+"cursors: %(err)s"
+
+#: xcash/common/admin_scan_cursor.py:138
+#, python-format
+msgid "已将 %(count)d 个扫描游标追平到链上最新区块"
+msgstr "Synced %(count)d scan cursors to the latest on-chain block"
 
 #: xcash/common/error_codes.py:20
 msgid "参数错误"
@@ -770,7 +996,7 @@ msgstr "This crypto is not supported on this chain"
 msgid "非校验和的地址格式"
 msgstr "Non-checksummed address format"
 
-#: xcash/common/error_codes.py:37 xcash/currencies/models.py:246
+#: xcash/common/error_codes.py:37 xcash/currencies/models.py:280
 msgid "合约地址"
 msgstr "Contract address"
 
@@ -847,62 +1073,115 @@ msgstr "Account is frozen"
 msgid "系统单号"
 msgstr "System order number"
 
-#: xcash/core/admin.py:31 xcash/core/dashboard.py:390
+#: xcash/core/admin.py:59
+msgid "支持按任务 ID 或任务名搜索"
+msgstr "Search by task ID or task name"
+
+#: xcash/core/admin.py:74 xcash/core/admin.py:103 xcash/evm/admin.py:71
+#: xcash/tron/admin.py:71
+msgid "任务"
+msgstr "Tasks"
+
+#: xcash/core/admin.py:88
+msgid "入参"
+msgstr "Arguments"
+
+#: xcash/core/admin.py:95 xcash/core/admin.py:142 xcash/stress/admin.py:258
+#: xcash/webhooks/admin.py:311
+msgid "结果"
+msgstr "Result"
+
+#: xcash/core/admin.py:115
+msgid "位置参数"
+msgstr "Positional Arguments"
+
+#: xcash/core/admin.py:119
+msgid "关键字参数"
+msgstr "Keyword Arguments"
+
+#: xcash/core/admin.py:123
+msgid "返回值"
+msgstr "Result"
+
+#: xcash/core/admin.py:127
+msgid "异常堆栈"
+msgstr "Traceback"
+
+#: xcash/core/admin.py:138
+msgid "支持按任务组 ID 搜索"
+msgstr "Search by group ID"
+
+#: xcash/core/admin.py:151 xcash/core/dashboard.py:458
 msgid "后台安全"
 msgstr "Admin Security"
 
-#: xcash/core/admin.py:35 xcash/core/dashboard.py:529
-msgid "Webhook 投递"
-msgstr "Webhook Delivery"
+#: xcash/core/admin.py:158
+msgid "Webhook"
+msgstr "Webhook"
 
-#: xcash/core/admin.py:59
-#| msgid "开启 AML 筛查"
+#: xcash/core/admin.py:167
+msgid ""
+"重试次数与退避上限决定单个事件的最长投递周期；超时分钟数只影响异常巡检的判定"
+"口径。"
+msgstr ""
+"Retry count and backoff cap determine the longest delivery window for a "
+"single event; the timeout only affects how operational inspection flags "
+"stalled events."
+
+#: xcash/core/admin.py:182
+msgid ""
+"归集延迟用于把同一槽位的多次到账聚合成一笔交易；最小归集价值避免为尘埃余额支"
+"付 gas。"
+msgstr ""
+"The sweep delay batches multiple deposits on the same slot into one "
+"transaction; the minimum sweep value avoids paying gas for dust balances."
+
+#: xcash/core/admin.py:187
 msgid "AML 筛查"
 msgstr "AML Screening"
 
-#: xcash/core/admin.py:72
-#| msgid "共计"
+#: xcash/core/admin.py:201
 msgid "审计"
 msgstr "Audit"
 
-#: xcash/core/admin.py:231
+#: xcash/core/admin.py:361
 msgid "RPC 未配置"
 msgstr "RPC not configured"
 
-#: xcash/core/admin.py:235
+#: xcash/core/admin.py:365
 msgid "暂不支持查询"
 msgstr "Query not supported"
 
-#: xcash/core/admin.py:237
+#: xcash/core/admin.py:370
 #, python-format
 msgid "查询失败：%(err)s"
 msgstr "Query failed: %(err)s"
 
-#: xcash/core/admin.py:253
+#: xcash/core/admin.py:387
 #, python-format
 msgid "地址派生失败：%(err)s"
 msgstr "Address derivation failed: %(err)s"
 
-#: xcash/core/dashboard.py:173 xcash/core/dashboard.py:328
+#: xcash/core/dashboard.py:175 xcash/core/dashboard.py:380
 msgid "中"
 msgstr "Medium"
 
-#: xcash/core/dashboard.py:174
+#: xcash/core/dashboard.py:176
 msgid "后台入口未配置"
 msgstr "Admin entry not configured"
 
-#: xcash/core/dashboard.py:175
+#: xcash/core/dashboard.py:178
 msgid "ADMIN_PATH 未设置，后台仍使用默认入口；建议配置独立后台路径。"
 msgstr ""
 "ADMIN_PATH is not set, so the admin still uses the default entry; configure "
 "a dedicated admin path."
 
-#: xcash/core/dashboard.py:190
+#: xcash/core/dashboard.py:194
 #, python-format
 msgid "%(chain)s / %(sender)s / 任务 %(task_count)s 个 / RPC 错误：%(error)s"
 msgstr "%(chain)s / %(sender)s / %(task_count)s tasks / RPC error: %(error)s"
 
-#: xcash/core/dashboard.py:199
+#: xcash/core/dashboard.py:203
 #, python-format
 msgid ""
 "%(chain)s / %(sender)s / 当前 %(current)s wei / 需要 %(required)s wei / 任务 "
@@ -911,16 +1190,17 @@ msgstr ""
 "%(chain)s / %(sender)s / current %(current)s wei / required %(required)s "
 "wei / %(task_count)s tasks"
 
-#: xcash/core/dashboard.py:209 xcash/core/dashboard.py:248
-#: xcash/core/dashboard.py:302 xcash/core/dashboard.py:355
+#: xcash/core/dashboard.py:213 xcash/core/dashboard.py:252
+#: xcash/core/dashboard.py:266 xcash/core/dashboard.py:280
+#: xcash/core/dashboard.py:354 xcash/core/dashboard.py:407
 msgid "高"
 msgstr "High"
 
-#: xcash/core/dashboard.py:210
+#: xcash/core/dashboard.py:214
 msgid "EVM Gas 余额不足"
 msgstr "Insufficient EVM Gas Balance"
 
-#: xcash/core/dashboard.py:227
+#: xcash/core/dashboard.py:231
 #, python-format
 msgid ""
 "%(chain)s / %(sender)s / 任务 %(task_count)s 个 / 资源查询错误：%(error)s"
@@ -928,7 +1208,7 @@ msgstr ""
 "%(chain)s / %(sender)s / %(task_count)s tasks / resource query error: "
 "%(error)s"
 
-#: xcash/core/dashboard.py:236
+#: xcash/core/dashboard.py:240
 #, python-format
 msgid ""
 "%(chain)s / %(sender)s / Energy %(energy)s/%(required_energy)s / Bandwidth "
@@ -937,262 +1217,287 @@ msgstr ""
 "%(chain)s / %(sender)s / Energy %(energy)s/%(required_energy)s / Bandwidth "
 "%(bandwidth)s/%(required_bandwidth)s / %(task_count)s tasks"
 
-#: xcash/core/dashboard.py:249
+#: xcash/core/dashboard.py:253
 msgid "Tron 资源不足"
 msgstr "Insufficient Tron Resources"
 
 #: xcash/core/dashboard.py:267
+msgid "无法读取任务消费心跳"
+msgstr "Cannot read task consumer heartbeat"
+
+#: xcash/core/dashboard.py:269
+msgid "请检查 Redis 连接与服务日志，当前无法确认任务处理是否正常。"
+msgstr ""
+"Check the Redis connection and service logs; task processing cannot be "
+"confirmed healthy right now."
+
+#: xcash/core/dashboard.py:275
+msgid "业务任务消费心跳异常"
+msgstr "Business task consumer heartbeat is unhealthy"
+
+#: xcash/core/dashboard.py:276
+msgid "链扫描任务消费心跳异常"
+msgstr "Chain scanning consumer heartbeat is unhealthy"
+
+#: xcash/core/dashboard.py:283
+#, python-format
+msgid ""
+"尚未收到心跳，或最近 %(seconds)s 秒内没有新鲜的调度与执行回执。请检查 "
+"worker、Beat、Redis 与任务积压。"
+msgstr ""
+"No heartbeat received, or no fresh scheduling and execution receipts in the "
+"last %(seconds)s seconds. Check the worker, Beat, Redis and the task backlog."
+
+#: xcash/core/dashboard.py:307
 msgid "后台安全配置"
 msgstr "Admin Security Configuration"
 
-#: xcash/core/dashboard.py:268
+#: xcash/core/dashboard.py:308
 msgid "后台入口路径与基础安全配置检查"
 msgstr "Admin entry path and basic security checks"
 
-#: xcash/core/dashboard.py:270
+#: xcash/core/dashboard.py:310
 msgid "当前没有后台安全配置风险"
 msgstr "No admin security configuration risks right now"
 
-#: xcash/core/dashboard.py:279
+#: xcash/core/dashboard.py:319
 msgid "EVM Gas 水位巡检"
 msgstr "EVM Gas Balance Inspection"
 
-#: xcash/core/dashboard.py:280
+#: xcash/core/dashboard.py:320
 msgid "主动上链任务 sender 原生币余额检查"
 msgstr "Native coin balance check for active on-chain task senders"
 
-#: xcash/core/dashboard.py:282
+#: xcash/core/dashboard.py:322
 msgid "当前没有 EVM Gas 余额不足的 sender"
 msgstr "No senders with insufficient EVM Gas balance right now"
 
-#: xcash/core/dashboard.py:291
+#: xcash/core/dashboard.py:331
 msgid "Tron 资源水位巡检"
 msgstr "Tron Resource Inspection"
 
-#: xcash/core/dashboard.py:292
+#: xcash/core/dashboard.py:332
 msgid "待广播或需重签任务的 Energy / Bandwidth 检查"
 msgstr ""
 "Energy / Bandwidth checks for tasks waiting to broadcast or needing resigning"
 
-#: xcash/core/dashboard.py:294
+#: xcash/core/dashboard.py:334
 msgid "当前没有 Tron 资源不足的 sender"
 msgstr "No senders with insufficient Tron resources right now"
 
-#: xcash/core/dashboard.py:303 xcash/core/dashboard.py:317
+#: xcash/core/dashboard.py:343
+msgid "任务消费巡检"
+msgstr "Task Consumption"
+
+#: xcash/core/dashboard.py:344
+msgid "业务任务与链扫描的执行心跳"
+msgstr "Execution heartbeat of business tasks and chain scanning"
+
+#: xcash/core/dashboard.py:346
+msgid "业务任务与链扫描的消费心跳均正常"
+msgstr "Business task and chain scanning heartbeats are both healthy"
+
+#: xcash/core/dashboard.py:355 xcash/core/dashboard.py:369
 msgid "Webhook 投递失败"
 msgstr "Webhook Delivery Failed"
 
-#: xcash/core/dashboard.py:304
+#: xcash/core/dashboard.py:356
 #, python-format
 msgid "项目 %(project)s 在 %(time)s 投递失败：HTTP %(status)s"
 msgstr "Project %(project)s delivery failed at %(time)s: HTTP %(status)s"
 
-#: xcash/core/dashboard.py:318
+#: xcash/core/dashboard.py:370
 msgid "近24小时失败回调明细"
 msgstr "Failed callback details in the last 24 hours"
 
-#: xcash/core/dashboard.py:320
+#: xcash/core/dashboard.py:372
 msgid "近24小时没有新的投递失败"
 msgstr "No new delivery failures in the last 24 hours"
 
-#: xcash/core/dashboard.py:329
+#: xcash/core/dashboard.py:381
 msgid "账单收款长时间待链上确认"
 msgstr "Invoice payment waiting too long for on-chain confirmation"
 
-#: xcash/core/dashboard.py:330
+#: xcash/core/dashboard.py:382
 #, python-format
 msgid "%(project)s / %(sys_no)s / %(crypto)s-%(chain)s"
 msgstr "%(project)s / %(sys_no)s / %(crypto)s-%(chain)s"
 
-#: xcash/core/dashboard.py:344
+#: xcash/core/dashboard.py:396
 msgid "链上确认巡检"
 msgstr "On-chain Confirmation Inspection"
 
-#: xcash/core/dashboard.py:345
+#: xcash/core/dashboard.py:397
 msgid "已观察到付款但长时间未满足确认数的账单收款"
 msgstr ""
 "Invoice payments with observed funds that have not reached required "
 "confirmations for a long time"
 
-#: xcash/core/dashboard.py:347
+#: xcash/core/dashboard.py:399
 msgid "当前没有长时间待链上确认的账单收款"
 msgstr ""
 "No invoice payments waiting too long for on-chain confirmation right now"
 
-#: xcash/core/dashboard.py:356
+#: xcash/core/dashboard.py:408
 msgid "Webhook 长时间未送达"
 msgstr "Webhook Not Delivered for Too Long"
 
-#: xcash/core/dashboard.py:357
+#: xcash/core/dashboard.py:409
 #, python-format
 msgid "%(project)s / %(nonce)s / 创建于 %(time)s"
 msgstr "%(project)s / %(nonce)s / created at %(time)s"
 
-#: xcash/core/dashboard.py:370
+#: xcash/core/dashboard.py:422
 msgid "Webhook 堆积巡检"
 msgstr "Webhook Backlog Inspection"
 
-#: xcash/core/dashboard.py:371
+#: xcash/core/dashboard.py:423
 msgid "创建后长时间未送达的事件"
 msgstr "Events not delivered for a long time after creation"
 
-#: xcash/core/dashboard.py:373
+#: xcash/core/dashboard.py:425
 msgid "当前没有堆积中的 Webhook 事件"
 msgstr "No backlogged Webhook events right now"
 
-#: xcash/core/dashboard.py:392
+#: xcash/core/dashboard.py:447
+msgid "任务消费"
+msgstr "Task Consumption"
+
+#: xcash/core/dashboard.py:450
+msgid "两组消费心跳均正常"
+msgstr "Both consumer heartbeats are healthy"
+
+#: xcash/core/dashboard.py:452
+msgid "消费心跳异常，请查看巡检明细"
+msgstr "Consumer heartbeat is unhealthy, see inspection details"
+
+#: xcash/core/dashboard.py:461
 msgid "ADMIN_PATH 已配置"
 msgstr "ADMIN_PATH configured"
 
-#: xcash/core/dashboard.py:394
+#: xcash/core/dashboard.py:463
 msgid "ADMIN_PATH 未设置"
 msgstr "ADMIN_PATH not set"
 
-#: xcash/core/dashboard.py:400
-msgid "EVM Gas 风险"
-msgstr "EVM Gas Risk"
+#: xcash/core/dashboard.py:469
+msgid "EVM Gas"
+msgstr "EVM Gas"
 
-#: xcash/core/dashboard.py:402
+#: xcash/core/dashboard.py:471
 #, python-format
 msgid "Gas 余额不足 sender %(count)s 个"
 msgstr "%(count)s senders with insufficient Gas balance"
 
-#: xcash/core/dashboard.py:409
-msgid "Tron 资源风险"
-msgstr "Tron Resource Risk"
+#: xcash/core/dashboard.py:476
+msgid "Tron 资源"
+msgstr "Tron Resources"
 
-#: xcash/core/dashboard.py:411
+#: xcash/core/dashboard.py:478
 #, python-format
 msgid "Energy / Bandwidth 不足 sender %(count)s 个"
 msgstr "%(count)s senders with insufficient Energy / Bandwidth"
 
-#: xcash/core/dashboard.py:418
-msgid "链上确认风险"
-msgstr "On-chain Confirmation Risk"
+#: xcash/core/dashboard.py:484
+msgid "链上确认"
+msgstr "On-chain Confirmation"
 
-#: xcash/core/dashboard.py:420
+#: xcash/core/dashboard.py:486
 #, python-format
 msgid "待链上确认 %(count)s 笔，临近超时 %(soon)s 笔"
 msgstr "%(count)s waiting for on-chain confirmation, %(soon)s close to timeout"
 
-#: xcash/core/dashboard.py:430
-msgid "Webhook 巡检"
-msgstr "Webhook Inspection"
+#: xcash/core/dashboard.py:495
+msgid "Webhook 堆积"
+msgstr "Webhook Backlog"
 
-#: xcash/core/dashboard.py:432
+#: xcash/core/dashboard.py:497
 #, python-format
 msgid "待投递 %(pending)s 条，失败事件 %(failed)s 条"
 msgstr "%(pending)s pending deliveries, %(failed)s failed events"
 
-#: xcash/core/dashboard.py:454
+#: xcash/core/dashboard.py:528
+msgid "成交金额 (USD)"
+msgstr "Revenue (USD)"
+
+#: xcash/core/dashboard.py:539
+msgid "创建账单"
+msgstr "Invoices Created"
+
+#: xcash/core/dashboard.py:548
+msgid "超时账单"
+msgstr "Invoices Expired"
+
+#: xcash/core/dashboard.py:628
 msgid "今日成交额"
-msgstr "Today's GMV"
+msgstr "Today's Revenue"
 
-#: xcash/core/dashboard.py:456
+#: xcash/core/dashboard.py:630 xcash/core/dashboard.py:638
+#: xcash/core/dashboard.py:646
 #, python-format
-msgid "今日成功账单收款 %(count)s 笔"
-msgstr "%(count)s successful invoice payments today"
+msgid "成功账单 %(count)s 笔"
+msgstr "%(count)s successful invoices"
 
-#: xcash/core/dashboard.py:461
-msgid "7日成交额"
-msgstr "7-day GMV"
+#: xcash/core/dashboard.py:636
+msgid "近 7 日成交额"
+msgstr "7-day Revenue"
 
-#: xcash/core/dashboard.py:463
+#: xcash/core/dashboard.py:644
+msgid "近 30 日成交额"
+msgstr "30-day Revenue"
+
+#: xcash/core/dashboard.py:658
+msgid "30 日转化率"
+msgstr "30-day Conversion"
+
+#: xcash/core/dashboard.py:660
 #, python-format
-msgid "近7日成功账单收款 %(count)s 笔"
-msgstr "%(count)s successful invoice payments in the last 7 days"
+msgid "近 30 日共创建 %(count)s 笔账单"
+msgstr "%(count)s invoices created in the last 30 days"
 
-#: xcash/core/dashboard.py:468
-msgid "30日成交额"
-msgstr "30-day GMV"
+#: xcash/core/dashboard.py:668 xcash/core/dashboard.py:704
+msgid "待链上确认"
+msgstr "Awaiting Confirmation"
 
-#: xcash/core/dashboard.py:470
-#, python-format
-msgid "近30日成功账单收款 %(count)s 笔"
-msgstr "%(count)s successful invoice payments in the last 30 days"
-
-#: xcash/core/dashboard.py:475
-msgid "30日账单收款转化率"
-msgstr "30-day Invoice Payment Conversion Rate"
-
-#: xcash/core/dashboard.py:477
-#, python-format
-msgid "近30日共创建账单收款 %(count)s 笔"
-msgstr "%(count)s invoice payments created in the last 30 days"
-
-#: xcash/core/dashboard.py:482
-msgid "待链上确认收款"
-msgstr "Payments Awaiting On-chain Confirmation"
-
-#: xcash/core/dashboard.py:484
+#: xcash/core/dashboard.py:670
 #, python-format
 msgid "已观察到付款 %(count)s 笔"
 msgstr "%(count)s observed payments"
 
-#: xcash/core/dashboard.py:489
-msgid "Webhook 健康度"
-msgstr "Webhook Health"
+#: xcash/core/dashboard.py:678
+msgid "Webhook 成功率"
+msgstr "Webhook Success Rate"
 
-#: xcash/core/dashboard.py:491
+#: xcash/core/dashboard.py:680
 #, python-format
-msgid "近7日投递 %(total)s 次，失败投递 %(failed)s 次"
+msgid "近 7 日投递 %(total)s 次，失败 %(failed)s 次"
 msgstr "%(total)s deliveries in the last 7 days, %(failed)s failed"
 
-#: xcash/core/dashboard.py:502 xcash/invoices/models.py:40
+#: xcash/core/dashboard.py:696 xcash/invoices/models.py:40
 msgid "待支付"
 msgstr "Pending payment"
 
-#: xcash/core/dashboard.py:508
-msgid "待链上确认账单收款"
-msgstr "Invoice Payments Awaiting On-chain Confirmation"
-
-#: xcash/core/dashboard.py:514
+#: xcash/core/dashboard.py:712
 msgid "待投递事件"
 msgstr "Pending Delivery Events"
 
-#: xcash/core/dashboard.py:516
+#: xcash/core/dashboard.py:714
 msgid "等待 Webhook 调度"
 msgstr "Waiting for Webhook scheduling"
 
-#: xcash/core/dashboard.py:520
+#: xcash/core/dashboard.py:720
 msgid "失败事件"
 msgstr "Failed Events"
 
-#: xcash/core/dashboard.py:522
+#: xcash/core/dashboard.py:722
 msgid "需要人工检查或重投"
 msgstr "Requires manual inspection or retry"
 
-#: xcash/core/dashboard.py:530
+#: xcash/core/dashboard.py:775
 #, python-format
-msgid "%(ok)s / %(total)s 成功"
-msgstr "%(ok)s / %(total)s successful"
+msgid "%(count)s 笔"
+msgstr "%(count)s payments"
 
-#: xcash/core/dashboard.py:535
-#, python-format
-msgid "近7日成功率 %(rate)s%%"
-msgstr "%(rate)s%% success rate in the last 7 days"
-
-#: xcash/core/dashboard.py:539
-msgid "任务巡检"
-msgstr "Task Inspection"
-
-#: xcash/core/dashboard.py:541
-msgid "超时回调"
-msgstr "Timed-out callbacks"
-
-#: xcash/core/dashboard.py:579
-msgid "完成金额(USD)"
-msgstr "Completed Amount (USD)"
-
-#: xcash/core/dashboard.py:590
-msgid "创建账单收款数"
-msgstr "Created Invoice Payments"
-
-#: xcash/core/dashboard.py:598
-msgid "超时账单收款数"
-msgstr "Timed-out Invoice Payments"
-
-#: xcash/core/models.py:23 xcash/core/models.py:178
+#: xcash/core/models.py:23 xcash/core/models.py:191
 msgid "单例键"
 msgstr "Singleton Key"
 
@@ -1263,10 +1568,24 @@ msgstr ""
 "default longer delay amortizes costs through batching."
 
 #: xcash/core/models.py:74
+msgid "行情价格最长可用时长(秒)"
+msgstr "Max price age (seconds)"
+
+#: xcash/core/models.py:77
+msgid ""
+"价格距上次成功刷新超过该时长即视为失效，该币暂时退出按法币计价的支付，避免行"
+"情源中断期间继续按过期汇率收款。0 表示不校验（行情源长期不可用时应急用）。"
+msgstr ""
+"A price older than this is treated as stale and the asset temporarily leaves "
+"fiat-priced payments, so collection never runs on an outdated rate while the "
+"feed is down. 0 disables the check (emergency use when the feed is "
+"unavailable long term)."
+
+#: xcash/core/models.py:82
 msgid "VaultSlot 最小归集价值(USD)"
 msgstr "Minimum VaultSlot Collection Value (USD)"
 
-#: xcash/core/models.py:80
+#: xcash/core/models.py:88
 msgid ""
 "归集计划到期执行时，槽位该币种余额价值低于该阈值则放弃本次归集（粉尘归集 gas "
 "必亏；后续入账使总额达标后会再次调度）。0 表示不限制。"
@@ -1276,11 +1595,11 @@ msgstr ""
 "would lose gas; later deposits that bring the total above the threshold will "
 "schedule again). 0 means unlimited."
 
-#: xcash/core/models.py:85
+#: xcash/core/models.py:93
 msgid "账单 VaultSlot 单项目单链上限"
 msgstr "Per-project Per-chain Invoice VaultSlot Limit"
 
-#: xcash/core/models.py:89
+#: xcash/core/models.py:97
 msgid ""
 "单个项目在单条链上最多可创建的账单收款 VaultSlot 数量。达到上限后仍可复用已有"
 "可用槽位，但不再创建新槽位。"
@@ -1289,136 +1608,197 @@ msgstr ""
 "on one chain. After the limit is reached, existing available slots can still "
 "be reused, but no new slots are created."
 
-#: xcash/core/models.py:94
+#: xcash/core/models.py:102
 msgid "开启 AML 筛查"
 msgstr "Enable AML Screening"
 
-#: xcash/core/models.py:96
+#: xcash/core/models.py:104
 msgid "开启后对高于 AML 查询阈值的账单收款和充值收款查询外部地址风险。"
 msgstr ""
 "When enabled, invoice payments and deposits above the AML query threshold "
 "are checked for external address risk."
 
-#: xcash/core/models.py:99
+#: xcash/core/models.py:107
 msgid "AML 查询阈值(USD)"
 msgstr "AML Query Threshold (USD)"
 
-#: xcash/core/models.py:104
+#: xcash/core/models.py:112
 msgid "账单收款或充值收款价值大于该阈值时执行 AML 查询。"
 msgstr ""
 "Run an AML query when the invoice payment or deposit value is greater than "
 "this threshold."
 
-#: xcash/core/models.py:107
+#: xcash/core/models.py:115
 msgid "AML 查询缓存秒数"
 msgstr "AML Query Cache Seconds"
 
-#: xcash/core/models.py:110
+#: xcash/core/models.py:118
 msgid "同一地址 AML 查询成功后在 Django 缓存中保留的秒数。"
 msgstr ""
 "The number of seconds a successful AML query for the same address is kept in "
 "the Django cache."
 
-#: xcash/core/models.py:113
+#: xcash/core/models.py:121
 msgid "AML 查询强制刷新阈值(USD)"
 msgstr "AML Force-refresh Threshold (USD)"
 
-#: xcash/core/models.py:118
+#: xcash/core/models.py:126
 msgid "本次业务价值大于该阈值时跳过缓存直接查询。"
 msgstr ""
 "Skip the cache and query directly when this business value is greater than "
 "this threshold."
 
-#: xcash/core/models.py:121
+#: xcash/core/models.py:129
 msgid "QuickNode MistTrack Endpoint"
 msgstr "QuickNode MistTrack Endpoint"
 
-#: xcash/core/models.py:124
+#: xcash/core/models.py:132
 msgid "QuickNode MistTrack add-on 的 JSON-RPC endpoint URL。"
 msgstr "JSON-RPC endpoint URL for the QuickNode MistTrack add-on."
 
-#: xcash/core/models.py:127
+#: xcash/core/models.py:135
 msgid "MistTrack OpenAPI API Key"
 msgstr "MistTrack OpenAPI API Key"
 
-#: xcash/core/models.py:132
+#: xcash/core/models.py:140
 msgid ""
 "MistTrack 官方 OpenAPI API Key；配置后优先使用 MistTrack V3 风险评分接口。"
 msgstr ""
 "Official MistTrack OpenAPI API key; when configured, the MistTrack V3 risk "
 "scoring API is preferred."
 
-#: xcash/core/models.py:141
+#: xcash/core/models.py:149
 msgid "创建人"
 msgstr "Created By"
 
-#: xcash/core/models.py:149
+#: xcash/core/models.py:157
 msgid "更新人"
 msgstr "Updated By"
 
-#: xcash/core/models.py:155 xcash/core/models.py:159
+#: xcash/core/models.py:163 xcash/core/models.py:167
 msgid "系统运行参数"
 msgstr "System Runtime Settings"
 
-#: xcash/core/models.py:187 xcash/core/models.py:194 xcash/core/models.py:198
+#: xcash/core/models.py:200 xcash/core/models.py:207 xcash/core/models.py:211
 msgid "系统热钱包"
 msgstr "System Hot Wallet"
 
-#: xcash/core/models.py:188
+#: xcash/core/models.py:201
 msgid "用于平台基础设施交易，例如统一部署 VaultSlot 合约。"
 msgstr ""
 "Used for platform infrastructure transactions, such as unified VaultSlot "
 "contract deployment."
 
-#: xcash/currencies/admin.py:15 xcash/currencies/admin.py:16
-#: xcash/currencies/models.py:265 xcash/currencies/models.py:266
-msgid "链上币种"
-msgstr "On-chain Currency"
+#: xcash/currencies/admin.py:20 xcash/currencies/admin.py:21
+msgid "链上形态"
+msgstr "On-chain Forms"
 
-#: xcash/currencies/admin.py:52
+#: xcash/currencies/admin.py:44
+msgid "支持按代码、名称或 CoinGecko ID 搜索"
+msgstr "Search by symbol, name or CoinGecko ID"
+
+#: xcash/currencies/admin.py:60
+msgid "行情"
+msgstr "Market Data"
+
+#: xcash/currencies/admin.py:69
+msgid ""
+"未配置 CoinGecko ID 且非 USD 锚定稳定币的资产不具备法币计价能力，只能用于充值"
+"收款，不会出现在账单收款可选方式中。"
+msgstr ""
+"An asset without a CoinGecko ID that is not a USD-pegged stablecoin cannot "
+"be priced in fiat. It can only be used for deposits and never appears among "
+"the payment methods offered on an invoice."
+
+#: xcash/currencies/admin.py:99
 msgid "代币"
 msgstr "Token"
 
-#: xcash/currencies/models.py:29
-msgid "例如:ETH、USDT"
-msgstr "Example: ETH, USDT"
-
-#: xcash/currencies/models.py:35
+#: xcash/currencies/admin.py:101 xcash/currencies/models.py:38
 msgid "支持的链"
 msgstr "Supported Chains"
 
-#: xcash/currencies/models.py:38
+#: xcash/currencies/admin.py:118
+msgid "USD 价格"
+msgstr "USD Price"
+
+#: xcash/currencies/admin.py:126
+msgid "可计价"
+msgstr "Priceable"
+
+#: xcash/currencies/admin.py:130 xcash/evm/admin.py:341 xcash/tron/admin.py:286
+msgid "是"
+msgstr "Yes"
+
+#: xcash/currencies/admin.py:130 xcash/evm/admin.py:341 xcash/tron/admin.py:286
+msgid "否"
+msgstr "No"
+
+#: xcash/currencies/admin.py:132
+msgid "行情快照"
+msgstr "Price Snapshot"
+
+#: xcash/currencies/admin.py:142
+msgid "支持按法币代码搜索"
+msgstr "Search by currency code"
+
+#: xcash/currencies/models.py:31 xcash/stress/models.py:40
+msgid "名称"
+msgstr "Name"
+
+#: xcash/currencies/models.py:32
+msgid "例如:ETH、USDT"
+msgstr "Example: ETH, USDT"
+
+#: xcash/currencies/models.py:41
 msgid "价格"
 msgstr "Price"
 
-#: xcash/currencies/models.py:44
+#: xcash/currencies/models.py:43
+msgid "价格更新时间"
+msgstr "Price Updated At"
+
+#: xcash/currencies/models.py:47
+msgid ""
+"最近一次成功写入行情的时间。价格陈旧时该币会退出支付计价，避免行情源中断期间"
+"继续按过期汇率收款。"
+msgstr ""
+"When the price was last written successfully. A stale price removes the "
+"asset from fiat pricing so collection never runs on an outdated rate while "
+"the feed is down."
+
+#: xcash/currencies/models.py:57
 msgid "CoinGecko ID"
 msgstr "CoinGecko ID"
 
-#: xcash/currencies/models.py:71
+#: xcash/currencies/models.py:85
 #, python-format
 msgid "仅已知链原生币可标记为原生币，允许的符号：%(symbols)s"
 msgstr ""
 "Only known chain native coins can be marked as native coins. Allowed "
 "symbols: %(symbols)s"
 
-#: xcash/currencies/models.py:248
+#: xcash/currencies/models.py:282
 msgid "精度"
 msgstr "Decimals"
 
-#: xcash/currencies/models.py:295
+#: xcash/currencies/models.py:299 xcash/currencies/models.py:300
+msgid "链上币种"
+msgstr "On-chain Currency"
+
+#: xcash/currencies/models.py:329
 msgid "EVM 合约地址格式无效。"
 msgstr "Invalid EVM contract address format."
 
-#: xcash/currencies/models.py:307
+#: xcash/currencies/models.py:342
 msgid "Tron 合约地址格式无效。"
 msgstr "Invalid Tron contract address format."
 
-#: xcash/currencies/models.py:310
+#: xcash/currencies/models.py:346
 msgid "不支持的链类型。"
 msgstr "Unsupported chain type."
 
-#: xcash/currencies/models.py:331
+#: xcash/currencies/models.py:367
 msgid ""
 "链上币种的链与币种一经创建不可变更；确需纠正只能经 QuerySet.update() 受控旁"
 "路。"
@@ -1426,15 +1806,40 @@ msgstr ""
 "The chain and currency of an on-chain currency cannot be changed after "
 "creation; corrections must use a controlled QuerySet.update() bypass."
 
-#: xcash/currencies/models.py:340
+#: xcash/currencies/models.py:376
 msgid "法币"
 msgstr "Fiat"
 
-#: xcash/deposits/admin.py:87
+#: xcash/deposits/admin.py:36
+msgid "支持按充值单号、客户 UID 或链上交易哈希搜索"
+msgstr "Search by deposit number, customer UID or on-chain transaction hash"
+
+#: xcash/deposits/admin.py:76
+msgid "链上到账"
+msgstr "On-chain Receipt"
+
+#: xcash/deposits/admin.py:97
+msgid "充值单号"
+msgstr "Deposit No."
+
+#: xcash/deposits/admin.py:101
+#, python-format
+msgid "客户 %(uid)s"
+msgstr "Customer %(uid)s"
+
+#: xcash/deposits/admin.py:131
+msgid "到账数量"
+msgstr "Received"
+
+#: xcash/deposits/admin.py:137
+msgid "价值"
+msgstr "Value"
+
+#: xcash/deposits/admin.py:177
 msgid "重调度 ERC20 归集"
 msgstr "Reschedule ERC20 Collection"
 
-#: xcash/deposits/admin.py:113
+#: xcash/deposits/admin.py:203
 #, python-format
 msgid ""
 "ERC20 归集重调度完成：成功 %(success)d，跳过 %(skipped)d，失败 %(failed)d"
@@ -1442,16 +1847,32 @@ msgstr ""
 "ERC20 collection rescheduling completed: %(success)d succeeded, %(skipped)d "
 "skipped, %(failed)d failed"
 
-#: xcash/evm/admin.py:54 xcash/tron/admin.py:57
-#| msgid "计划执行时间"
+#: xcash/evm/admin.py:68
+msgid "支持按交易哈希、发送地址或目标地址搜索"
+msgstr "Search by transaction hash, sender address or target address"
+
+#: xcash/evm/admin.py:85
+msgid "交易参数"
+msgstr "Transaction Parameters"
+
+#: xcash/evm/admin.py:98 xcash/tron/admin.py:96
+msgid ""
+"签名产物 signed_payload 不在后台展示：它可被任何人直接广播，等同一次性支付凭"
+"证。"
+msgstr ""
+"The signed_payload is never shown in the admin: anyone holding it can "
+"broadcast the transaction, which makes it equivalent to a one-time bearer "
+"instrument."
+
+#: xcash/evm/admin.py:104 xcash/tron/admin.py:117
 msgid "执行时间"
 msgstr "Execution Time"
 
-#: xcash/evm/admin.py:68
+#: xcash/evm/admin.py:120
 msgid "确认 nonce 已处理后标记 QUEUED 任务失败"
 msgstr "Mark QUEUED tasks failed after confirming nonce was handled"
 
-#: xcash/evm/admin.py:103
+#: xcash/evm/admin.py:153
 #, python-format
 msgid ""
 "已标记 %(updated)d 个 QUEUED 任务为失败，跳过 %(skipped)d 个非 QUEUED 任务，"
@@ -1461,66 +1882,75 @@ msgstr ""
 "tasks, and blocked %(blocked)d tasks whose on-chain nonce was not consumed "
 "or could not be queried."
 
-#: xcash/evm/admin.py:238 xcash/tron/admin.py:86 xcash/tron/admin.py:158
-msgid "是"
-msgstr "Yes"
+#: xcash/evm/admin.py:241 xcash/evm/admin.py:245 xcash/tron/admin.py:174
+#: xcash/tron/admin.py:178
+msgid "目标地址"
+msgstr "Target Address"
 
-#: xcash/evm/admin.py:238 xcash/tron/admin.py:86 xcash/tron/admin.py:158
-msgid "否"
-msgstr "No"
+#: xcash/evm/admin.py:280 xcash/tron/admin.py:220
+msgid "支持按链代码或错误信息搜索"
+msgstr "Search by chain code or error message"
 
-#: xcash/evm/admin.py:240 xcash/tron/admin.py:160
+#: xcash/evm/admin.py:296 xcash/tron/admin.py:236
+msgid "扫描位点"
+msgstr "Scan Cursor"
+
+#: xcash/evm/admin.py:307 xcash/tron/admin.py:247
+msgid ""
+"游标单调前进且没有回补机制：把位点直接推到链头会永久跳过区间内的充值，仅在明"
+"确知道后果时使用「追平到最新区块」。"
+msgstr ""
+"The cursor only moves forward and never backfills: jumping it to the chain "
+"head permanently skips every deposit in the gap. Use \"Sync to latest "
+"block\" only when you accept that consequence."
+
+#: xcash/evm/admin.py:313 xcash/tron/admin.py:253
+msgid "最近异常"
+msgstr "Latest Error"
+
+#: xcash/evm/admin.py:343 xcash/tron/admin.py:288
 msgid "链上最新块"
 msgstr "Latest On-chain Block"
 
-#: xcash/evm/admin.py:245 xcash/tron/admin.py:185
+#: xcash/evm/admin.py:347 xcash/tron/admin.py:292
+msgid "已扫描到"
+msgstr "Scanned To"
+
+#: xcash/evm/admin.py:352 xcash/tron/admin.py:309
 msgid "扫描状态"
 msgstr "Scan Status"
 
-#: xcash/evm/admin.py:252 xcash/tron/admin.py:192
-#| msgid "异常巡检"
+#: xcash/evm/admin.py:359 xcash/tron/admin.py:316
 msgid "异常"
 msgstr "Error"
 
-#: xcash/evm/admin.py:252 xcash/evm/admin.py:273 xcash/tron/admin.py:182
-#: xcash/tron/admin.py:192 xcash/webhooks/admin.py:21
-#: xcash/webhooks/admin.py:119
-msgid "正常"
-msgstr "Normal"
-
-#: xcash/evm/admin.py:254 xcash/tron/admin.py:164
+#: xcash/evm/admin.py:361 xcash/tron/admin.py:296
 msgid "落后区块"
 msgstr "Lagging Blocks"
 
-#: xcash/evm/admin.py:260 xcash/tron/admin.py:169
+#: xcash/evm/admin.py:368 xcash/evm/admin.py:374 xcash/tron/admin.py:302
+#: xcash/tron/admin.py:318
 msgid "积压"
 msgstr "Backlog"
 
-#: xcash/evm/admin.py:270 xcash/tron/admin.py:179
-msgid "严重"
-msgstr "Severe"
-
-#: xcash/evm/admin.py:272 xcash/tron/admin.py:181
-msgid "轻微"
-msgstr "Minor"
+#: xcash/evm/admin.py:387 xcash/evm/models.py:47 xcash/tron/admin.py:330
+#: xcash/tron/models.py:64
+msgid "最近错误"
+msgstr "Last Error"
 
 #: xcash/evm/apps.py:9
 msgid "EVM"
 msgstr "EVM"
 
-#: xcash/evm/models.py:45 xcash/tron/models.py:61
+#: xcash/evm/models.py:45 xcash/tron/models.py:62
 msgid "已扫描到的区块"
 msgstr "Scanned Through Block"
 
-#: xcash/evm/models.py:47 xcash/tron/models.py:63
-msgid "最近错误"
-msgstr "Last Error"
-
-#: xcash/evm/models.py:48 xcash/tron/models.py:64
+#: xcash/evm/models.py:48 xcash/tron/models.py:65
 msgid "最近错误时间"
 msgstr "Last Error At"
 
-#: xcash/evm/models.py:73 xcash/tron/models.py:94
+#: xcash/evm/models.py:73 xcash/tron/models.py:95
 msgid "通用链上任务"
 msgstr "Common On-chain Task"
 
@@ -1528,7 +1958,7 @@ msgstr "Common On-chain Task"
 msgid "Nonce"
 msgstr "Nonce"
 
-#: xcash/evm/models.py:86 xcash/tron/models.py:106
+#: xcash/evm/models.py:86 xcash/tron/models.py:107
 msgid "To"
 msgstr "To"
 
@@ -1548,50 +1978,91 @@ msgstr "Gas"
 msgid "Gas Price"
 msgstr "Gas Price"
 
-#: xcash/evm/models.py:96 xcash/tron/models.py:113
+#: xcash/evm/models.py:96 xcash/tron/models.py:120
 msgid "已签名链上载荷"
 msgstr "Signed On-chain Payload"
 
-#: xcash/evm/models.py:98 xcash/tron/models.py:126
+#: xcash/evm/models.py:98 xcash/tron/models.py:133
 msgid "上次尝试时间"
 msgstr "Last Attempt At"
 
-#: xcash/invoices/admin.py:26 xcash/invoices/admin.py:27
-#: xcash/invoices/models.py:710
+#: xcash/invoices/admin.py:31 xcash/invoices/admin.py:32
+#: xcash/invoices/models.py:711
 msgid "EPay 订单"
 msgstr "EPay Order"
 
-#: xcash/invoices/admin.py:141
-msgid "账单收款信息"
-msgstr "Payment"
+#: xcash/invoices/admin.py:92
+msgid "支持按项目名称、Appid 或收款地址搜索"
+msgstr "Search by project name, Appid or receiving address"
 
-#: xcash/invoices/admin.py:152
-msgid "交易收据"
-msgstr "Recipient"
+#: xcash/invoices/admin.py:104
+msgid ""
+"钱包直收模式下，账单收款直接打到这里配置的外部地址；同一链类型可配置多条并按"
+"排序轮换。"
+msgstr ""
+"In direct-wallet mode invoice payments land on the external addresses "
+"configured here. Several addresses per chain type can be configured and are "
+"rotated by sort order."
 
-#: xcash/invoices/admin.py:156
-msgid "风控"
-msgstr "Risk Control"
+#: xcash/invoices/admin.py:109
+msgid "启用与排序"
+msgstr "Status & Order"
 
-#: xcash/invoices/admin.py:184
-msgid "风险"
-msgstr "Risk"
+#: xcash/invoices/admin.py:155
+msgid "支持按系统单号、商户单号、链上交易哈希或收款地址搜索"
+msgstr ""
+"Search by system number, merchant number, on-chain transaction hash or "
+"receiving address"
 
-#: xcash/invoices/admin.py:196 xcash/invoices/models.py:217
-msgid "协议"
-msgstr "Protocol"
+#: xcash/invoices/admin.py:174
+msgid "订单"
+msgstr "Order"
 
-#: xcash/invoices/admin.py:206 xcash/invoices/models.py:137
+#: xcash/invoices/admin.py:190 xcash/invoices/models.py:139
+#: xcash/stress/admin.py:488
 msgid "金额"
 msgstr "Amount"
 
-#: xcash/invoices/admin.py:214
-msgid "加密货币数量"
-msgstr "Crypto amount"
+#: xcash/invoices/admin.py:202
+msgid "链上收款"
+msgstr "On-chain Payment"
 
-#: xcash/invoices/admin.py:221
-msgid "账单收款链接"
-msgstr "Pay url"
+#: xcash/invoices/admin.py:223
+msgid "回调"
+msgstr "Callbacks"
+
+#: xcash/invoices/admin.py:242
+msgid "单号"
+msgstr "Number"
+
+#: xcash/invoices/admin.py:247
+#, python-format
+msgid "商户单号 %(out_no)s"
+msgstr "Merchant no. %(out_no)s"
+
+#: xcash/invoices/admin.py:278 xcash/invoices/models.py:221
+msgid "协议"
+msgstr "Protocol"
+
+#: xcash/invoices/admin.py:288
+msgid "计价金额"
+msgstr "Priced Amount"
+
+#: xcash/invoices/admin.py:293
+msgid "收款数量"
+msgstr "Crypto Amount"
+
+#: xcash/invoices/admin.py:306
+msgid "收款页"
+msgstr "Pay Page"
+
+#: xcash/invoices/admin.py:314
+msgid "收款页链接"
+msgstr "Pay Page URL"
+
+#: xcash/invoices/admin.py:335
+msgid "可选收款方式"
+msgstr "Available Payment Methods"
 
 #: xcash/invoices/models.py:41 xcash/stress/models.py:13
 msgid "已完成"
@@ -1609,190 +2080,238 @@ msgstr "Xcash Native"
 msgid "EPay V1"
 msgstr "EPay V1"
 
-#: xcash/invoices/models.py:72
-msgid "钱包直收地址"
-msgstr "Direct Wallet Address"
-
-#: xcash/invoices/models.py:87
+#: xcash/invoices/models.py:88
 msgid "EVM 钱包直收地址必须是 checksum 地址"
 msgstr "EVM direct wallet address must be a checksum address"
 
-#: xcash/invoices/models.py:91
+#: xcash/invoices/models.py:93
 msgid "Tron 钱包直收地址必须是 Base58 地址"
 msgstr "Tron direct wallet address must be a Base58 address"
 
-#: xcash/invoices/models.py:95
+#: xcash/invoices/models.py:97
 msgid "钱包直收地址已被收款归集地址占用"
 msgstr "Direct wallet address is already used as a collection address"
 
-#: xcash/invoices/models.py:126 xcash/stress/models.py:102
+#: xcash/invoices/models.py:128 xcash/stress/models.py:102
 msgid "商户单号"
 msgstr "Merchant order number"
 
-#: xcash/invoices/models.py:129
+#: xcash/invoices/models.py:131
 msgid "标题"
 msgstr "Title"
 
-#: xcash/invoices/models.py:134
+#: xcash/invoices/models.py:136
 msgid "计价货币"
 msgstr "Pricing Currency"
 
-#: xcash/invoices/models.py:143
+#: xcash/invoices/models.py:145
 msgid "支持的账单收款方式"
 msgstr "Supported payment methods"
 
-#: xcash/invoices/models.py:161 xcash/invoices/models.py:166
+#: xcash/invoices/models.py:163 xcash/invoices/models.py:168
 msgid "账单收款加密货币数量"
 msgstr "Crypto amount"
 
-#: xcash/invoices/models.py:175
+#: xcash/invoices/models.py:177
 msgid "账单收款开始时间"
 msgstr "Pay after"
 
-#: xcash/invoices/models.py:176
+#: xcash/invoices/models.py:178
 msgid "账单收款截止时间"
 msgstr "Payment deadline"
 
-#: xcash/invoices/models.py:177 xcash/invoices/models.py:693
+#: xcash/invoices/models.py:179 xcash/invoices/models.py:694
 msgid "异步通知地址"
 msgstr "Async Notification URL"
 
-#: xcash/invoices/models.py:178
+#: xcash/invoices/models.py:181
 msgid "账单收款成功后同步跳转地址"
 msgstr "Redirect URL after successful payment"
 
-#: xcash/invoices/models.py:594 xcash/invoices/models.py:687
+#: xcash/invoices/models.py:595 xcash/invoices/models.py:688
 msgid "EPay 商户 ID"
 msgstr "EPay Merchant ID"
 
-#: xcash/invoices/models.py:596
+#: xcash/invoices/models.py:597
 msgid "EPay 密钥"
 msgstr "EPay Key"
 
-#: xcash/invoices/models.py:599
+#: xcash/invoices/models.py:600
 msgid "EPay 协议签名密钥。建议使用强随机字符串，不要与项目 HMAC 密钥重用。"
 msgstr ""
 "EPay protocol signing key. Use a strong random string and do not reuse the "
 "project HMAC key."
 
-#: xcash/invoices/models.py:607 xcash/invoices/models.py:685
+#: xcash/invoices/models.py:608 xcash/invoices/models.py:686
 msgid "EPay 商户"
 msgstr "EPay Merchant"
 
-#: xcash/invoices/models.py:688
+#: xcash/invoices/models.py:689
 msgid "EPay 平台订单号"
 msgstr "EPay Platform Order Number"
 
-#: xcash/invoices/models.py:689
+#: xcash/invoices/models.py:690
 msgid "商户订单号"
 msgstr "Merchant Order Number"
 
-#: xcash/invoices/models.py:690
+#: xcash/invoices/models.py:691
 msgid "账单收款类型"
 msgstr "Invoice Payment Type"
 
-#: xcash/invoices/models.py:691
+#: xcash/invoices/models.py:692
 msgid "商品名称"
 msgstr "Product Name"
 
-#: xcash/invoices/models.py:692
+#: xcash/invoices/models.py:693
 msgid "订单金额"
 msgstr "Order Amount"
 
-#: xcash/invoices/models.py:694
+#: xcash/invoices/models.py:695
 msgid "同步跳转地址"
 msgstr "Synchronous Redirect URL"
 
-#: xcash/invoices/models.py:695
+#: xcash/invoices/models.py:696
 msgid "业务扩展参数"
 msgstr "Business Extension Parameters"
 
-#: xcash/invoices/models.py:696
+#: xcash/invoices/models.py:697
 msgid "签名类型"
 msgstr "Signature Type"
 
-#: xcash/invoices/models.py:697
+#: xcash/invoices/models.py:698
 msgid "原始请求"
 msgstr "Raw Request"
 
-#: xcash/invoices/models.py:736
+#: xcash/invoices/models.py:737
 msgid "账单项目必须与 EPay 商户项目一致。"
 msgstr "The invoice project must match the EPay merchant project."
 
-#: xcash/invoices/models.py:739
+#: xcash/invoices/models.py:740
 msgid "EPay 商户 ID 必须与所属商户一致。"
 msgstr "The EPay merchant ID must match its owning merchant."
 
-#: xcash/projects/admin.py:24 xcash/projects/models.py:49
+#: xcash/projects/admin.py:36 xcash/projects/models.py:41
+msgid "只有符合白名单的 IP 才可以与本网关交互，支持 IP 地址或 IP 网段"
+msgstr ""
+"Only IPs on the whitelist can interact with this gateway. Supports both IP "
+"addresses and IP ranges."
+
+#: xcash/projects/admin.py:37 xcash/projects/models.py:43
+msgid "可同时设置多个，中间用英文逗号 ',' 分割"
+msgstr "Multiple entries can be set, separated by commas ','"
+
+#: xcash/projects/admin.py:38 xcash/projects/models.py:45
+msgid "* 代表允许所有 IP 访问"
+msgstr "* means allowing access from all IP addresses"
+
+#: xcash/projects/admin.py:45 xcash/projects/models.py:49
 msgid "通知地址"
 msgstr "Notification URL"
 
-#: xcash/projects/admin.py:27 xcash/projects/models.py:52
+#: xcash/projects/admin.py:48 xcash/projects/models.py:52
 msgid "用于本网关发送通知到商户后端"
 msgstr "Used by this gateway to send notifications to the merchant backend"
 
-#: xcash/projects/admin.py:66
+#: xcash/projects/admin.py:89
 msgid "IP 白名单格式错误."
 msgstr "Invalid IP allowlist format."
 
-#: xcash/projects/admin.py:85
+#: xcash/projects/admin.py:107
 msgid "EVM 收款归集地址一旦设置不可修改。"
 msgstr "The EVM collection address cannot be changed after it is set."
 
-#: xcash/projects/admin.py:106
+#: xcash/projects/admin.py:126
 msgid "Tron 收款归集地址一旦设置不可修改。"
 msgstr "The Tron collection address cannot be changed after it is set."
 
-#: xcash/projects/admin.py:142
+#: xcash/projects/admin.py:161
 msgid "显示或隐藏密钥"
 msgstr "View"
 
-#: xcash/projects/admin.py:159 xcash/projects/admin.py:160
+#: xcash/projects/admin.py:179 xcash/projects/admin.py:180
 msgid "EPay 配置"
 msgstr "EPay Configuration"
 
-#: xcash/projects/admin.py:261 xcash/projects/admin.py:294
+#: xcash/projects/admin.py:236
+msgid "支持按项目名称、Appid 或通知地址搜索"
+msgstr "Search by project name, Appid or webhook URL"
+
+#: xcash/projects/admin.py:287
+msgid ""
+"创建后会自动分配 Appid 与 HMAC 密钥；收款归集地址等资金配置在项目详情页补齐。"
+msgstr ""
+"An Appid and HMAC key are assigned automatically on creation; vault "
+"addresses and the rest of the funds configuration are filled in on the "
+"project page."
+
+#: xcash/projects/admin.py:291 xcash/projects/admin.py:330
 msgid "安全"
 msgstr "Safe"
 
-#: xcash/projects/admin.py:265 xcash/projects/admin.py:338
-msgid "项目状态"
-msgstr "Project Status"
+#: xcash/projects/admin.py:315
+msgid "资金"
+msgstr "Funds"
 
-#: xcash/projects/admin.py:283
-msgid "项目资金"
-msgstr "Project Funds"
+#: xcash/projects/admin.py:325
+msgid ""
+"收款归集地址一旦设置不可修改：它参与 VaultSlot 合约地址推导，变更会让历史收款"
+"地址全部失效。"
+msgstr ""
+"A vault address cannot be changed once set: it feeds the VaultSlot contract "
+"address derivation, so changing it invalidates every receiving address "
+"issued so far."
 
-#: xcash/projects/admin.py:317 xcash/stress/models.py:11
+#: xcash/projects/admin.py:359 xcash/stress/models.py:11
 msgid "就绪"
 msgstr "Ready"
 
-#: xcash/projects/admin.py:325
-#| msgid "就绪"
+#: xcash/projects/admin.py:367
 msgid "已就绪"
 msgstr "Ready"
 
-#: xcash/projects/admin.py:325
-#| msgid "就绪"
+#: xcash/projects/admin.py:367
 msgid "未就绪"
 msgstr "Not Ready"
 
-#: xcash/projects/admin.py:336
-#| msgid "测试网"
+#: xcash/projects/admin.py:378
 msgid "测试"
 msgstr "Test"
 
-#: xcash/projects/admin.py:336
+#: xcash/projects/admin.py:378
 msgid "生产"
 msgstr "Production"
 
-#: xcash/projects/admin.py:349
+#: xcash/projects/admin.py:384
+msgid "已开启"
+msgstr "Enabled"
+
+#: xcash/projects/admin.py:384
+msgid "已关闭"
+msgstr "Disabled"
+
+#: xcash/projects/admin.py:387
+msgid "收款模式"
+msgstr "Receiving Mode"
+
+#: xcash/projects/admin.py:395
+msgid "项目状态"
+msgstr "Project Status"
+
+#: xcash/projects/admin.py:406
 msgid "所有检查项已通过，项目可正常运行"
 msgstr "All checks passed. The project can operate normally."
 
-#: xcash/projects/admin.py:369
+#: xcash/projects/admin.py:426
 msgid "项目未就绪，请处理以下问题"
 msgstr "The project is not ready. Please resolve the following issues."
+
+#: xcash/projects/admin.py:439
+msgid "支持按客户 UID 或项目名称搜索"
+msgstr "Search by customer UID or project name"
+
+#: xcash/projects/admin.py:448
+msgid "充值笔数"
+msgstr "Deposits"
 
 #: xcash/projects/models.py:18
 msgid "智能合约"
@@ -1817,20 +2336,6 @@ msgstr "Displayed externally as the merchant name"
 #: xcash/projects/models.py:38
 msgid "IP白名单"
 msgstr "IP allowlist"
-
-#: xcash/projects/models.py:41
-msgid "只有符合白名单的 IP 才可以与本网关交互，支持 IP 地址或 IP 网段"
-msgstr ""
-"Only IPs on the whitelist can interact with this gateway. Supports both IP "
-"addresses and IP ranges."
-
-#: xcash/projects/models.py:43
-msgid "可同时设置多个，中间用英文逗号 ',' 分割"
-msgstr "Multiple entries can be set, separated by commas ','"
-
-#: xcash/projects/models.py:45
-msgid "* 代表允许所有 IP 访问"
-msgstr "* means allowing access from all IP addresses"
 
 #: xcash/projects/models.py:54
 msgid "通知状态"
@@ -1961,41 +2466,118 @@ msgstr "Customer UID"
 msgid "加入时间"
 msgstr "Joined At"
 
-#: xcash/stress/admin.py:206
+#: xcash/stress/admin.py:201
+msgid "支持按轮次名称搜索"
+msgstr "Search by run name"
+
+#: xcash/stress/admin.py:241
+msgid "轮次"
+msgstr "Run"
+
+#: xcash/stress/admin.py:249
+msgid "规模"
+msgstr "Scale"
+
+#: xcash/stress/admin.py:253
+#, python-format
+msgid "账单 %(count)s"
+msgstr "Invoices %(count)s"
+
+#: xcash/stress/admin.py:254
+#, python-format
+msgid "充值 %(count)s / 客户 %(customers)s"
+msgstr "Deposits %(count)s / Customers %(customers)s"
+
+#: xcash/stress/admin.py:261
+#, python-format
+msgid "成功 %(n)s"
+msgstr "Succeeded %(n)s"
+
+#: xcash/stress/admin.py:262
+#, python-format
+msgid "失败 %(failed)s / 跳过 %(skipped)s"
+msgstr "Failed %(failed)s / Skipped %(skipped)s"
+
+#: xcash/stress/admin.py:266
 msgid "各阶段耗时分位数"
 msgstr "Stage Duration Percentiles"
 
-#: xcash/stress/admin.py:214 xcash/stress/admin.py:256
+#: xcash/stress/admin.py:274 xcash/stress/admin.py:316
 msgid "无数据可聚合"
 msgstr "No data to aggregate"
 
-#: xcash/stress/admin.py:234
+#: xcash/stress/admin.py:294
 msgid "Invoice"
 msgstr "Invoice"
 
-#: xcash/stress/admin.py:243
+#: xcash/stress/admin.py:303
 msgid "Deposit"
 msgstr "Deposit"
 
-#: xcash/stress/admin.py:295
+#: xcash/stress/admin.py:355
 msgid "测试数据正在后台准备，稍后刷新页面查看状态"
 msgstr ""
 "Test data is being prepared in the background. Refresh the page later to "
 "view the status."
 
-#: xcash/stress/admin.py:297
+#: xcash/stress/admin.py:357
 msgid "开始执行"
 msgstr "Start Execution"
 
-#: xcash/stress/admin.py:304
+#: xcash/stress/admin.py:364
 #, python-format
 msgid "%(name)s 状态为 %(status)s，只有就绪状态才能执行"
 msgstr "%(name)s status is %(status)s. Only ready items can be executed."
 
-#: xcash/stress/admin.py:312
+#: xcash/stress/admin.py:372
 #, python-format
 msgid "已启动 %(count)d 个测试"
 msgstr "Started %(count)d tests"
+
+#: xcash/stress/admin.py:393
+msgid "支持按账单单号、商户单号或交易哈希搜索"
+msgstr "Search by invoice number, merchant number or transaction hash"
+
+#: xcash/stress/admin.py:404 xcash/stress/admin.py:484
+msgid "用例"
+msgstr "Case"
+
+#: xcash/stress/admin.py:412 xcash/stress/admin.py:496
+msgid "收款方式"
+msgstr "Payment Method"
+
+#: xcash/stress/admin.py:421 xcash/stress/admin.py:505
+msgid "Webhook 校验"
+msgstr "Webhook Checks"
+
+#: xcash/stress/admin.py:427 xcash/stress/admin.py:511
+msgid "未收到"
+msgstr "Not received"
+
+#: xcash/stress/admin.py:435 xcash/stress/admin.py:519
+msgid "全部通过"
+msgstr "All passed"
+
+#: xcash/stress/admin.py:438 xcash/stress/admin.py:522
+#, python-format
+msgid "%(passed)s/4 通过"
+msgstr "%(passed)s/4 passed"
+
+#: xcash/stress/admin.py:442 xcash/stress/admin.py:526
+msgid "归集"
+msgstr "Sweep"
+
+#: xcash/stress/admin.py:448 xcash/stress/admin.py:532
+msgid "已验证"
+msgstr "Verified"
+
+#: xcash/stress/admin.py:450 xcash/stress/admin.py:534
+msgid "未验证"
+msgstr "Unverified"
+
+#: xcash/stress/admin.py:473
+msgid "支持按客户 UID、交易哈希或归集哈希搜索"
+msgstr "Search by customer UID, transaction hash or sweep hash"
 
 #: xcash/stress/apps.py:8 xcash/stress/models.py:75 xcash/stress/models.py:76
 msgid "压力测试"
@@ -2080,30 +2662,25 @@ msgstr "Deposit Customer Count"
 msgid "专用项目"
 msgstr "Dedicated Project"
 
-#: xcash/stress/models.py:68 xcash/stress/models.py:132
-#: xcash/stress/models.py:203
-msgid "错误信息"
-msgstr "Error Message"
-
 #: xcash/stress/models.py:71 xcash/stress/models.py:139
-#: xcash/stress/models.py:205
+#: xcash/stress/models.py:211
 msgid "开始时间"
 msgstr "Started At"
 
-#: xcash/stress/models.py:72 xcash/stress/models.py:144
-#: xcash/stress/models.py:210
+#: xcash/stress/models.py:72 xcash/stress/models.py:150
+#: xcash/stress/models.py:222
 msgid "完成时间"
 msgstr "Completed at"
 
-#: xcash/stress/models.py:94 xcash/stress/models.py:162
+#: xcash/stress/models.py:94 xcash/stress/models.py:168
 msgid "序号"
 msgstr "Sequence"
 
-#: xcash/stress/models.py:96 xcash/stress/models.py:164
+#: xcash/stress/models.py:96 xcash/stress/models.py:170
 msgid "调度偏移(秒)"
 msgstr "Schedule Offset (seconds)"
 
-#: xcash/stress/models.py:97 xcash/stress/models.py:165
+#: xcash/stress/models.py:97 xcash/stress/models.py:171
 msgid "相对于 Stress.started_at 的偏移秒数"
 msgstr "Offset in seconds relative to Stress.started_at"
 
@@ -2111,79 +2688,75 @@ msgstr "Offset in seconds relative to Stress.started_at"
 msgid "账单收款金额"
 msgstr "Invoice Payment Amount"
 
-#: xcash/stress/models.py:113 xcash/stress/models.py:180
-msgid "付款地址"
-msgstr "Payment Address"
-
-#: xcash/stress/models.py:117 xcash/stress/models.py:184
+#: xcash/stress/models.py:117 xcash/stress/models.py:190
 msgid "已收到 Webhook"
 msgstr "Webhook Received"
 
-#: xcash/stress/models.py:118 xcash/stress/models.py:185
+#: xcash/stress/models.py:118 xcash/stress/models.py:191
 msgid "签名验证"
 msgstr "Signature Verification"
 
-#: xcash/stress/models.py:119 xcash/stress/models.py:186
+#: xcash/stress/models.py:119 xcash/stress/models.py:192
 msgid "Payload 验证"
 msgstr "Payload Verification"
 
-#: xcash/stress/models.py:120 xcash/stress/models.py:187
+#: xcash/stress/models.py:120 xcash/stress/models.py:193
 msgid "Nonce 验证"
 msgstr "Nonce Verification"
 
-#: xcash/stress/models.py:121 xcash/stress/models.py:188
+#: xcash/stress/models.py:121 xcash/stress/models.py:194
 msgid "时间戳验证"
 msgstr "Timestamp Verification"
 
-#: xcash/stress/models.py:123 xcash/stress/models.py:190
+#: xcash/stress/models.py:123 xcash/stress/models.py:196
 msgid "已收到的 Nonce 列表"
 msgstr "Received Nonce List"
 
-#: xcash/stress/models.py:135 xcash/stress/models.py:194
+#: xcash/stress/models.py:135 xcash/stress/models.py:200
 msgid "归集已验证"
 msgstr "Collection Verified"
 
-#: xcash/stress/models.py:136 xcash/stress/models.py:195
+#: xcash/stress/models.py:136 xcash/stress/models.py:201
 msgid "归集交易哈希"
 msgstr "Collection Transaction Hash"
 
-#: xcash/stress/models.py:137 xcash/stress/models.py:209
+#: xcash/stress/models.py:137 xcash/stress/models.py:221
 msgid "归集完成时间"
 msgstr "Collection Completed At"
 
-#: xcash/stress/models.py:140
+#: xcash/stress/models.py:141
 msgid "账单收款创建完成时间"
 msgstr "Invoice Payment Creation Completed At"
 
-#: xcash/stress/models.py:141
+#: xcash/stress/models.py:144
 msgid "选择账单收款方式完成时间"
 msgstr "Payment Method Selection Completed At"
 
-#: xcash/stress/models.py:142
+#: xcash/stress/models.py:146
 msgid "链上广播完成时间"
 msgstr "On-chain Broadcast Completed At"
 
-#: xcash/stress/models.py:143 xcash/stress/models.py:208
+#: xcash/stress/models.py:148 xcash/stress/models.py:219
 msgid "Webhook 处理完成时间"
 msgstr "Webhook Processing Completed At"
 
-#: xcash/stress/models.py:169
+#: xcash/stress/models.py:175
 msgid "客户 UID"
 msgstr "Customer UID"
 
-#: xcash/stress/models.py:176
+#: xcash/stress/models.py:182
 msgid "充值收款金额"
 msgstr "Deposit Amount"
 
-#: xcash/stress/models.py:206
+#: xcash/stress/models.py:213
 msgid "获取充值收款地址完成时间"
 msgstr "Deposit Address Fetch Completed At"
 
-#: xcash/stress/models.py:207
+#: xcash/stress/models.py:216
 msgid "链上充值收款完成时间"
 msgstr "On-chain Deposit Completed At"
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:15
+#: xcash/templates/admin/core/systemwallet/change_form.html:14
 msgid ""
 "系统热钱包用于平台基础设施交易，例如 VaultSlot 合约部署与 VaultSlot 归集等由"
 "系统主动发起的链上操作。"
@@ -2192,7 +2765,7 @@ msgstr ""
 "as VaultSlot contract deployment and VaultSlot collection initiated by the "
 "system."
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:16
+#: xcash/templates/admin/core/systemwallet/change_form.html:15
 msgid ""
 "仅需保留覆盖近期操作的小额 Gas，请勿存入过多原生币，也不要把它当作业务资金归"
 "集地址。"
@@ -2201,108 +2774,136 @@ msgstr ""
 "excessive native coins, and do not use it as a business fund collection "
 "address."
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:25
+#: xcash/templates/admin/core/systemwallet/change_form.html:23
 msgid "钱包地址"
 msgstr "Wallet Address"
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:51
+#: xcash/templates/admin/core/systemwallet/change_form.html:49
 msgid "已复制"
 msgstr "Copied"
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:51
+#: xcash/templates/admin/core/systemwallet/change_form.html:49
 msgid "复制地址"
 msgstr "Copy Address"
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:68
+#: xcash/templates/admin/core/systemwallet/change_form.html:66
 msgid "各链原生币余额"
 msgstr "Native Coin Balances by Chain"
 
-#: xcash/templates/admin/core/systemwallet/change_form.html:77
+#: xcash/templates/admin/core/systemwallet/change_form.html:75
 msgid "暂无启用的 EVM 链"
 msgstr "No enabled EVM chains"
 
 #: xcash/templates/admin/index.html:7
-msgid "控制台 | Xcash"
-msgstr "Dashboard | Xcash"
+msgid "经营看板 | Xcash"
+msgstr "Operations Dashboard | Xcash"
 
-#: xcash/templates/admin/index.html:33
+#: xcash/templates/admin/index.html:34
 msgid "围绕成交、转化、积压与回调健康度的实时概览。"
-msgstr "A real-time overview of GMV, conversion, backlog, and callback health."
+msgstr "A real-time overview of revenue, conversion, backlog, and callback health."
 
-#: xcash/templates/admin/index.html:54
-msgid "30日订单趋势"
-msgstr "30-day Order Trend"
+#: xcash/templates/admin/index.html:42
+#, python-format
+msgid "%(count)s 项待处理异常"
+msgstr "%(count)s issues need attention"
 
-#: xcash/templates/admin/index.html:59
-msgid "当前积压与风险"
-msgstr "Current Backlog and Risk"
+#: xcash/templates/admin/index.html:47
+msgid "暂无异常"
+msgstr "All clear"
 
-#: xcash/templates/admin/index.html:78
-msgid "项目表现排行（30日）"
-msgstr "Project Performance Ranking (30 days)"
+#: xcash/templates/admin/index.html:68
+msgid "30 日趋势"
+msgstr "30-day Trend"
 
-#: xcash/templates/admin/index.html:85
+#: xcash/templates/admin/index.html:69
+msgid "成交金额走左轴，账单笔数走右轴"
+msgstr "Revenue on the left axis, invoice count on the right"
+
+#: xcash/templates/admin/index.html:75
+msgid "当前积压"
+msgstr "Current Backlog"
+
+#: xcash/templates/admin/index.html:76
+msgid "点击任意一项跳转到对应筛选结果"
+msgstr "Click any row to open the matching filtered list"
+
+#: xcash/templates/admin/index.html:99
+msgid "项目表现排行"
+msgstr "Project Leaderboard"
+
+#: xcash/templates/admin/index.html:100
+msgid "近 30 日按成交额排序"
+msgstr "Last 30 days, ranked by revenue"
+
+#: xcash/templates/admin/index.html:107
 msgid "成交额"
-msgstr "GMV"
+msgstr "Revenue"
 
-#: xcash/templates/admin/index.html:86
+#: xcash/templates/admin/index.html:108
 msgid "成功单"
 msgstr "Successful Orders"
 
-#: xcash/templates/admin/index.html:87
+#: xcash/templates/admin/index.html:109
 msgid "转化率"
 msgstr "Conversion Rate"
 
-#: xcash/templates/admin/index.html:88
+#: xcash/templates/admin/index.html:110
 msgid "在途"
 msgstr "In Progress"
 
-#: xcash/templates/admin/index.html:102
+#: xcash/templates/admin/index.html:124
 msgid "暂无成交数据"
 msgstr "No transaction data yet"
 
-#: xcash/templates/admin/index.html:110
-msgid "账单收款方式分布（30日）"
-msgstr "Invoice Payment Method Distribution (30 days)"
+#: xcash/templates/admin/index.html:132
+msgid "收款方式分布"
+msgstr "Payment Method Mix"
 
-#: xcash/templates/admin/index.html:117
-msgid "成功账单收款"
-msgstr "Successful Invoice Payments"
+#: xcash/templates/admin/index.html:133
+msgid "近 30 日成交额占比"
+msgstr "Share of revenue over the last 30 days"
 
-#: xcash/templates/admin/index.html:117
-msgid "笔"
-msgstr "orders"
+#: xcash/templates/admin/index.html:148
+msgid "暂无收款方式分布数据"
+msgstr "No payment method data yet"
 
-#: xcash/templates/admin/index.html:122
-msgid "暂无账单收款方式分布数据"
-msgstr "No invoice payment method distribution data yet"
-
-#: xcash/templates/admin/index.html:129
-msgid "系统健康"
-msgstr "System Health"
-
-#: xcash/templates/admin/index.html:142
+#: xcash/templates/admin/index.html:154
 msgid "需要关注"
 msgstr "Needs Attention"
 
-#: xcash/templates/admin/index.html:168
+#: xcash/templates/admin/index.html:155
+msgid "按严重程度排在最前的异常，完整清单见异常巡检"
+msgstr ""
+"Most severe issues first; the full list lives in Operational Inspection"
+
+#: xcash/templates/admin/index.html:173
 msgid "当前没有需要人工介入的异常项"
 msgstr "No exception items currently require manual intervention"
+
+#: xcash/templates/admin/index.html:180
+#, python-format
+msgid "查看全部 %(count)s 项"
+msgstr "View all %(count)s"
 
 #: xcash/templates/admin/operational_inspection.html:7
 msgid "异常巡检 | Xcash"
 msgstr "Operational Inspection | Xcash"
 
-#: xcash/templates/admin/operational_inspection.html:25
+#: xcash/templates/admin/operational_inspection.html:27
 #, python-format
 msgid "当前共汇总 %(count)s 个需要人工关注的异常或风险信号。"
 msgstr ""
 "Currently summarized %(count)s exception or risk signals requiring manual "
 "attention."
 
-#: xcash/templates/admin/operational_inspection.html:52
-msgid "项"
-msgstr "items"
+#: xcash/templates/admin/operational_inspection.html:34
+msgid "返回经营看板"
+msgstr "Back to dashboard"
+
+#: xcash/templates/admin/operational_inspection.html:53
+#, python-format
+msgid "%(count)s 项待处理"
+msgstr "%(count)s open"
 
 #: xcash/templates/auth/email_verification.html:14
 msgid "您已登出"
@@ -2328,58 +2929,126 @@ msgstr "Welcome"
 msgid "登录"
 msgstr "Log in"
 
-#: xcash/tron/admin.py:76
+#: xcash/tron/admin.py:68
+msgid "支持按交易哈希、tx_id、发送地址或目标地址搜索"
+msgstr "Search by transaction hash, tx_id, sender address or target address"
+
+#: xcash/tron/admin.py:85
+msgid "合约调用"
+msgstr "Contract Call"
+
+#: xcash/tron/admin.py:101
+msgid "广播与过期"
+msgstr "Broadcast & Expiry"
+
+#: xcash/tron/admin.py:134 xcash/tron/admin.py:160
 msgid "过期"
 msgstr "Expired"
 
-#: xcash/tron/admin.py:85
-#| msgid "函数签名"
+#: xcash/tron/admin.py:143 xcash/tron/admin.py:163
 msgid "未签名"
 msgstr "Unsigned"
 
-#: xcash/tron/models.py:107
+#: xcash/tron/admin.py:144 xcash/tron/admin.py:164
+msgid "已过期"
+msgstr "Expired"
+
+#: xcash/tron/admin.py:144 xcash/tron/admin.py:164
+msgid "有效"
+msgstr "Valid"
+
+#: xcash/tron/admin.py:190
+msgid "调用参数"
+msgstr "Call Parameters"
+
+#: xcash/tron/models.py:108
 msgid "函数签名"
 msgstr "Function Signature"
 
-#: xcash/tron/models.py:108
+#: xcash/tron/models.py:109
 msgid "ABI 参数"
 msgstr "ABI Parameters"
 
-#: xcash/tron/models.py:109
+#: xcash/tron/models.py:110
 msgid "Fee Limit"
 msgstr "Fee Limit"
 
-#: xcash/tron/models.py:111
+#: xcash/tron/models.py:115
 msgid "Ref Block Bytes"
 msgstr "Ref Block Bytes"
 
-#: xcash/tron/models.py:112
+#: xcash/tron/models.py:118
 msgid "Ref Block Hash"
 msgstr "Ref Block Hash"
 
-#: xcash/tron/models.py:114
+#: xcash/tron/models.py:121
 msgid "当前 TxID"
 msgstr "Current TxID"
 
-#: xcash/tron/models.py:118
+#: xcash/tron/models.py:125
 msgid "模拟 Revert 连续次数"
 msgstr "Consecutive Simulated Revert Count"
 
-#: xcash/tron/models.py:122
+#: xcash/tron/models.py:129
 msgid "模拟 Revert 首次观测时间"
 msgstr "First Simulated Revert Observed At"
 
-#: xcash/tron/models.py:131
+#: xcash/tron/models.py:138
 msgid "Tron 链上任务"
 msgstr "Tron On-chain Task"
 
-#: xcash/users/admin.py:31
+#: xcash/users/admin.py:28
+msgid "账号"
+msgstr "Account"
+
+#: xcash/users/admin.py:38
 msgid "权限"
 msgstr "Permissions"
 
-#: xcash/users/admin.py:40
+#: xcash/users/admin.py:49
+msgid ""
+"超级管理员拥有全部后台能力，包括扫描游标启停、归集重排等资金治理操作；只做审"
+"计查看的账号请只给 staff + 只读权限组。"
+msgstr ""
+"A superuser holds every admin capability, including fund-governance actions "
+"such as pausing scan cursors and requeuing sweeps. Audit-only accounts "
+"should get staff plus a read-only group instead."
+
+#: xcash/users/admin.py:55
 msgid "重要日期"
 msgstr "Important dates"
+
+#: xcash/users/admin.py:86 xcash/users/admin.py:139
+msgid "支持按用户名搜索"
+msgstr "Search by username"
+
+#: xcash/users/admin.py:91
+msgid "角色"
+msgstr "Role"
+
+#: xcash/users/admin.py:102
+msgid "超级管理员"
+msgstr "Superuser"
+
+#: xcash/users/admin.py:105
+msgid "无后台权限"
+msgstr "No admin access"
+
+#: xcash/users/admin.py:119
+msgid "支持按权限组名称搜索"
+msgstr "Search by group name"
+
+#: xcash/users/admin.py:131
+msgid "权限数"
+msgstr "Permissions"
+
+#: xcash/users/admin.py:141
+msgid "Token"
+msgstr "Token"
+
+#: xcash/users/admin.py:144
+msgid "完整 Token 不在列表页展示"
+msgstr "The full token is not shown in the list"
 
 #: xcash/users/apps.py:7
 msgid "用户"
@@ -2389,56 +3058,116 @@ msgstr "User"
 msgid "此用户名已被使用."
 msgstr "This username is already in use."
 
-#: xcash/users/forms.py:44 xcash/users/models.py:11
+#: xcash/users/forms.py:47 xcash/users/models.py:11
 msgid "用户名"
 msgstr "Username"
 
-#: xcash/users/forms.py:49
+#: xcash/users/forms.py:52
 msgid "密码"
 msgstr "Password"
-
-#: xcash/users/forms.py:59
-msgid "此账户已被禁用，如有疑问请联系管理员。"
-msgstr ""
-"This account has been disabled. Please contact the administrator if you have "
-"any questions."
 
 #: xcash/users/views.py:54
 msgid "用户名或密码错误。"
 msgstr "Incorrect username or password."
 
-#: xcash/webhooks/admin.py:16
+#: xcash/webhooks/admin.py:20
 msgid "巡检状态"
 msgstr "Inspection Status"
 
-#: xcash/webhooks/admin.py:22
+#: xcash/webhooks/admin.py:26
 msgid "超时未投递"
 msgstr "Timed out before delivery"
 
-#: xcash/webhooks/admin.py:82
-msgid "重试信息"
-msgstr "Retry info"
+#: xcash/webhooks/admin.py:57 xcash/webhooks/admin.py:58
+msgid "投递尝试"
+msgstr "Delivery Attempts"
 
-#: xcash/webhooks/admin.py:101
+#: xcash/webhooks/admin.py:75 xcash/webhooks/admin.py:324
+msgid "响应状态码"
+msgstr "Response Status"
+
+#: xcash/webhooks/admin.py:115 xcash/webhooks/admin.py:169
+#: xcash/webhooks/admin.py:299 xcash/webhooks/models.py:78
+#: xcash/webhooks/models.py:102
+msgid "事件"
+msgstr "Notification Events"
+
+#: xcash/webhooks/admin.py:129
+msgid "投递配置"
+msgstr "Delivery Settings"
+
+#: xcash/webhooks/admin.py:140
+msgid "重试与锁"
+msgstr "Retry & Locks"
+
+#: xcash/webhooks/admin.py:151
+msgid "载荷"
+msgstr "Payload"
+
+#: xcash/webhooks/admin.py:167 xcash/webhooks/admin.py:249
+msgid "支持按事件 nonce 或项目名称搜索"
+msgstr "Search by event nonce or project name"
+
+#: xcash/webhooks/admin.py:188
 msgid "尝试次数"
 msgstr "Attempt Count"
 
-#: xcash/webhooks/admin.py:106
+#: xcash/webhooks/admin.py:195
 msgid "巡检"
 msgstr "Inspection"
 
-#: xcash/webhooks/admin.py:118
-#| msgid "已超时"
+#: xcash/webhooks/admin.py:207
 msgid "超时"
 msgstr "Timed Out"
 
-#: xcash/webhooks/admin.py:121
+#: xcash/webhooks/admin.py:210 xcash/webhooks/models.py:28
+msgid "内容"
+msgstr "Content"
+
+#: xcash/webhooks/admin.py:214 xcash/webhooks/models.py:66
+msgid "投递报错信息"
+msgstr "Error"
+
+#: xcash/webhooks/admin.py:218
 msgid "重新投递"
 msgstr "Retry"
 
-#: xcash/webhooks/admin.py:131
+#: xcash/webhooks/admin.py:231
 msgid "已进入待投递队列"
 msgstr "Pending"
+
+#: xcash/webhooks/admin.py:263
+msgid "投递"
+msgstr "Delivery"
+
+#: xcash/webhooks/admin.py:277
+msgid "请求"
+msgstr "Request"
+
+#: xcash/webhooks/admin.py:287
+msgid "响应"
+msgstr "Response"
+
+#: xcash/webhooks/admin.py:303
+#, python-format
+msgid "第 %(n)s 次尝试"
+msgstr "Attempt %(n)s"
+
+#: xcash/webhooks/admin.py:318
+msgid "耗时"
+msgstr "Duration"
+
+#: xcash/webhooks/admin.py:332
+msgid "请求头"
+msgstr "Request Headers"
+
+#: xcash/webhooks/admin.py:336
+msgid "请求体"
+msgstr "Request Body"
+
+#: xcash/webhooks/admin.py:340
+msgid "响应体"
+msgstr "Response Body"
 
 #: xcash/webhooks/models.py:10
 msgid "待投递"
@@ -2466,10 +3195,6 @@ msgstr ""
 "Unique. This nonce is used for idempotency and deduplication due to "
 "potential multiple retries."
 
-#: xcash/webhooks/models.py:28
-msgid "内容"
-msgstr "Content"
-
 #: xcash/webhooks/models.py:29
 msgid "投递地址"
 msgstr "Delivery URL"
@@ -2483,36 +3208,125 @@ msgid "成功响应内容"
 msgstr "Successful Response Body"
 
 #: xcash/webhooks/models.py:48
+msgid "已尝试次数"
+msgstr "Attempts"
+
+#: xcash/webhooks/models.py:51
+msgid ""
+"认领投递时原子自增，是重试次数的唯一真源。不能用 attempts 关联表计数：任务在"
+"写 DeliveryAttempt 之前被杀时，关联表计数不增长，重试上限就永远不会触发。"
+msgstr ""
+"Incremented atomically when a delivery is claimed; this is the single source "
+"of truth for the retry count. Counting rows in the attempts table does not "
+"work: if the task is killed before writing a DeliveryAttempt the count never "
+"grows and the retry limit never triggers."
+
+#: xcash/webhooks/models.py:57
 msgid "下次投递"
 msgstr "Next attempt"
 
-#: xcash/webhooks/models.py:51
+#: xcash/webhooks/models.py:60
 msgid "投递锁定至"
 msgstr "Delivery Locked Until"
 
-#: xcash/webhooks/models.py:57
-msgid "投递报错信息"
-msgstr "Error"
-
-#: xcash/webhooks/models.py:60
+#: xcash/webhooks/models.py:69
 msgid "送达时间"
 msgstr "Delivered at"
 
-#: xcash/webhooks/models.py:69 xcash/webhooks/models.py:93
-msgid "事件"
-msgstr "Notification Events"
-
-#: xcash/webhooks/models.py:95
+#: xcash/webhooks/models.py:104
 msgid "次数"
 msgstr "Try number"
 
-#: xcash/webhooks/models.py:105
+#: xcash/webhooks/models.py:114
 msgid "耗时(ms)"
 msgstr "Duration(ms)"
 
-#: xcash/webhooks/models.py:110
+#: xcash/webhooks/models.py:119
 msgid "错误"
 msgstr "Parameter error"
+
+#~| msgid "目标类型"
+#~ msgid "目标"
+#~ msgstr "Target"
+
+#~| msgid "时间戳"
+#~ msgid "时间"
+#~ msgstr "Time"
+
+#~ msgid "Tron 资源风险"
+#~ msgstr "Tron Resource Risk"
+
+#~ msgid "链上确认风险"
+#~ msgstr "On-chain Confirmation Risk"
+
+#~ msgid "Webhook 巡检"
+#~ msgstr "Webhook Inspection"
+
+#, python-format
+#~ msgid "近7日成功账单收款 %(count)s 笔"
+#~ msgstr "%(count)s successful invoice payments in the last 7 days"
+
+#, python-format
+#~ msgid "近30日成功账单收款 %(count)s 笔"
+#~ msgstr "%(count)s successful invoice payments in the last 30 days"
+
+#~ msgid "30日账单收款转化率"
+#~ msgstr "30-day Invoice Payment Conversion Rate"
+
+#~ msgid "Webhook 健康度"
+#~ msgstr "Webhook Health"
+
+#~ msgid "待链上确认账单收款"
+#~ msgstr "Invoice Payments Awaiting On-chain Confirmation"
+
+#, python-format
+#~ msgid "%(ok)s / %(total)s 成功"
+#~ msgstr "%(ok)s / %(total)s successful"
+
+#, python-format
+#~ msgid "近7日成功率 %(rate)s%%"
+#~ msgstr "%(rate)s%% success rate in the last 7 days"
+
+#~ msgid "任务巡检"
+#~ msgstr "Task Inspection"
+
+#~ msgid "账单收款信息"
+#~ msgstr "Payment"
+
+#~ msgid "交易收据"
+#~ msgstr "Recipient"
+
+#~ msgid "加密货币数量"
+#~ msgstr "Crypto amount"
+
+#~ msgid "账单收款链接"
+#~ msgstr "Pay url"
+
+#~ msgid "控制台 | Xcash"
+#~ msgstr "Dashboard | Xcash"
+
+#~ msgid "30日订单趋势"
+#~ msgstr "30-day Order Trend"
+
+#~ msgid "成功账单收款"
+#~ msgstr "Successful Invoice Payments"
+
+#~ msgid "笔"
+#~ msgstr "orders"
+
+#~ msgid "系统健康"
+#~ msgstr "System Health"
+
+#~ msgid "项"
+#~ msgstr "items"
+
+#~ msgid "此账户已被禁用，如有疑问请联系管理员。"
+#~ msgstr ""
+#~ "This account has been disabled. Please contact the administrator if you "
+#~ "have any questions."
+
+#~ msgid "重试信息"
+#~ msgstr "Retry info"
 
 #~ msgid "仪表板"
 #~ msgstr "Dashboard"
@@ -2606,9 +3420,6 @@ msgstr "Parameter error"
 
 #~ msgid "全局月统计"
 #~ msgstr "Global Monthly Statistics"
-
-#~ msgid "月"
-#~ msgstr "Month"
 
 #~ msgid "交易量"
 #~ msgstr "Trading Volume"
@@ -2894,9 +3705,6 @@ msgstr "Parameter error"
 
 #~ msgid "补充信息"
 #~ msgstr "Additional Information"
-
-#~ msgid "人机验证"
-#~ msgstr "Human verification"
 
 #~ msgid "此邮箱已被使用。"
 #~ msgstr "This email is already in use."

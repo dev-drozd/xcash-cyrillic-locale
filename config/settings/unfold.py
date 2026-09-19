@@ -11,6 +11,11 @@ BASE_UNFOLD = {
     "LOGIN": {
         "image": lambda request: static("login-bg.jpg"),
     },
+    # django-unfold 发布的是 Tailwind 预编译产物，只包含它自身模板用到的类；
+    # 项目模板需要的少量补充能力（等宽数字、行分隔、语义色指标卡等）由这份样式提供。
+    "STYLES": [
+        lambda request: static("core/css/admin.css"),
+    ],
     "SITE_FAVICONS": [
         {
             "rel": "icon",
@@ -24,6 +29,9 @@ BASE_UNFOLD = {
         "dark": lambda request: static("logo.png"),  # dark mode
     },
     "SHOW_LANGUAGES": True,
+    # 后台大量页面是只读审计视图，保留历史入口便于追溯人工操作。
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": False,
     "LANGUAGES": {
         "navigation": [
             {
@@ -116,22 +124,6 @@ SIDEBAR_UNFOLD = {
                 ],
             },
             {
-                "title": _("货币"),
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": _("加密货币"),
-                        "icon": "currency_bitcoin",
-                        "link": reverse_lazy("admin:currencies_crypto_changelist"),
-                    },
-                    {
-                        "title": _("法定货币"),
-                        "icon": "attach_money",
-                        "link": reverse_lazy("admin:currencies_fiat_changelist"),
-                    },
-                ],
-            },
-            {
                 "title": _("项目"),
                 "collapsible": False,
                 "items": [
@@ -139,6 +131,18 @@ SIDEBAR_UNFOLD = {
                         "title": _("项目列表"),
                         "icon": "widgets",
                         "link": reverse_lazy("admin:projects_project_changelist"),
+                    },
+                    {
+                        "title": _("客户"),
+                        "icon": "group",
+                        "link": reverse_lazy("admin:projects_customer_changelist"),
+                    },
+                    {
+                        "title": _("钱包直收地址"),
+                        "icon": "alternate_email",
+                        "link": reverse_lazy(
+                            "admin:invoices_differrecipientaddress_changelist"
+                        ),
                     },
                 ],
             },
@@ -211,14 +215,28 @@ SIDEBAR_UNFOLD = {
                         "link": reverse_lazy("admin:chains_transfer_changelist"),
                     },
                     {
+                        "title": _("上链任务"),
+                        "icon": "bolt",
+                        "link": reverse_lazy("admin:chains_txtask_changelist"),
+                    },
+                    {
+                        "title": _("归集计划"),
+                        "icon": "move_down",
+                        "link": reverse_lazy(
+                            "admin:chains_vaultslotcollectschedule_changelist"
+                        ),
+                    },
+                ],
+            },
+            {
+                # 链适配层：只有排障时才需要下钻到具体链的任务与游标，默认折叠。
+                "title": _("链适配"),
+                "collapsible": True,
+                "items": [
+                    {
                         "title": _("EVM 上链任务"),
                         "icon": "bolt",
                         "link": reverse_lazy("admin:evm_evmtxtask_changelist"),
-                    },
-                    {
-                        "title": _("Tron 上链任务"),
-                        "icon": "bolt",
-                        "link": reverse_lazy("admin:tron_trontxtask_changelist"),
                     },
                     {
                         "title": _("EVM 扫描游标"),
@@ -226,15 +244,57 @@ SIDEBAR_UNFOLD = {
                         "link": reverse_lazy("admin:evm_evmscancursor_changelist"),
                     },
                     {
+                        "title": _("Tron 上链任务"),
+                        "icon": "bolt",
+                        "link": reverse_lazy("admin:tron_trontxtask_changelist"),
+                    },
+                    {
                         "title": _("Tron 扫描游标"),
                         "icon": "radar",
                         "link": reverse_lazy("admin:tron_tronwatchcursor_changelist"),
                     },
+                    {
+                        "title": _("钱包"),
+                        "icon": "wallet",
+                        "link": reverse_lazy("admin:chains_wallet_changelist"),
+                    },
+                    {
+                        "title": _("派生地址"),
+                        "icon": "key",
+                        "link": reverse_lazy("admin:chains_address_changelist"),
+                    },
                 ],
             },
             {
-                "title": _("任务"),
-                "collapsible": False,
+                "title": _("货币"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("加密货币"),
+                        "icon": "currency_bitcoin",
+                        "link": reverse_lazy("admin:currencies_crypto_changelist"),
+                    },
+                    {
+                        "title": _("法定货币"),
+                        "icon": "attach_money",
+                        "link": reverse_lazy("admin:currencies_fiat_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("风控"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("风险评估"),
+                        "icon": "shield",
+                        "link": reverse_lazy("admin:aml_riskassessment_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("运维"),
+                "collapsible": True,
                 "items": [
                     {
                         "title": _("任务日志"),
@@ -242,6 +302,21 @@ SIDEBAR_UNFOLD = {
                         "link": reverse_lazy(
                             "admin:django_celery_results_taskresult_changelist",
                         ),
+                    },
+                    {
+                        "title": _("后台用户"),
+                        "icon": "manage_accounts",
+                        "link": reverse_lazy("admin:users_user_changelist"),
+                    },
+                    {
+                        "title": _("权限组"),
+                        "icon": "groups",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                    {
+                        "title": _("API Token"),
+                        "icon": "vpn_key",
+                        "link": reverse_lazy("admin:authtoken_tokenproxy_changelist"),
                     },
                 ],
             },

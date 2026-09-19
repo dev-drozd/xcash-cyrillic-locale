@@ -76,40 +76,46 @@ def _address_change_href(sender) -> str:
     return reverse("admin:chains_address_change", args=[sender.pk])
 
 
-def _tone_title_class(tone: str) -> str:
-    if tone == "danger":
-        return "text-red-700 dark:text-red-400"
-    if tone == "warning":
-        return "text-orange-700 dark:text-orange-400"
-    return "text-gray-500"
+# 展示层语义色：unfold 的预编译 CSS 只包含它自己用到的类，项目模板里自造的
+# Tailwind 颜色类（bg-emerald-50 之类）不会生效。看板与巡检页统一走
+# core/css/admin.css 里定义的 xc-* 语义类，配色跟随 unfold 变量与深色模式。
+TONE_ICONS = {
+    "danger": "error",
+    "warning": "warning",
+    "success": "check_circle",
+    "info": "info",
+    "neutral": "info",
+}
 
 
-def _tone_metric_class(tone: str) -> str:
-    if tone == "danger":
-        return "text-3xl mt-2 text-red-700 dark:text-red-400"
-    if tone == "warning":
-        return "text-3xl mt-2 text-orange-700 dark:text-orange-400"
-    return "text-3xl mt-2 text-gray-900 dark:text-gray-100"
-
-
-def _tone_subtitle_class(tone: str) -> str:
-    if tone == "danger":
-        return "text-sm mt-3 text-red-600 dark:text-red-300"
-    if tone == "warning":
-        return "text-sm mt-3 text-orange-600 dark:text-orange-300"
-    return "text-sm mt-3 text-gray-500"
-
-
-def _tone_badge_class(tone: str) -> str:
-    if tone == "danger":
-        return "inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700 dark:bg-red-500/20 dark:text-red-400"
-    if tone == "warning":
-        return "inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700 dark:bg-orange-500/20 dark:text-orange-400"
-    return "inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600"
-
-
-def _active_summary_tone(count: int, *, tone: str) -> str:
+def _tone_or_neutral(count: int, *, tone: str) -> str:
+    """风险类指标只有真的有风险时才着色，避免整页常态飘红。"""
     return tone if int(count) > 0 else "neutral"
+
+
+def _metric_card(
+    *,
+    title,
+    metric,
+    subtitle,
+    tone: str = "neutral",
+    icon: str = "insights",
+    href: str = "",
+) -> dict:
+    return {
+        "title": title,
+        "metric": metric,
+        "subtitle": subtitle,
+        "tone": tone,
+        "icon": icon,
+        "href": href,
+        "metric_class": "xc-metric-value"
+        + (f" xc-value-{tone}" if tone in ("success", "warning", "danger") else ""),
+        "card_class": f"xc-metric xc-metric-{tone}",
+        "icon_class": (
+            f"xc-icon-badge xc-icon-{tone}" if tone != "neutral" else "xc-icon-badge"
+        ),
+    }
 
 
 def _inspection_row(
@@ -125,9 +131,9 @@ def _inspection_row(
         "title": title,
         "description": description,
         "href": href,
-        "title_class": f"font-medium {_tone_title_class(tone)}",
-        "description_class": f"text-sm mt-1 {_tone_title_class(tone)}",
-        "level_class": _tone_badge_class(tone),
+        "tone": tone,
+        "icon": TONE_ICONS.get(tone, "info"),
+        "icon_class": f"xc-icon-badge xc-icon-{tone}",
     }
 
 
@@ -139,34 +145,16 @@ def _inspection_section(
     empty_text,
     tone: str = "neutral",
 ) -> dict:
+    active_tone = tone if rows else "success"
     return {
         "title": title,
         "subtitle": subtitle,
         "count": len(rows),
         "rows": rows,
         "empty_text": empty_text,
-        "count_class": _tone_badge_class(tone if rows else "neutral"),
-    }
-
-
-def _summary_card(
-    *,
-    title,
-    metric,
-    subtitle,
-    tone: str,
-    active_count: int,
-    background: str,
-) -> dict:
-    active_tone = _active_summary_tone(active_count, tone=tone)
-    return {
-        "title": title,
-        "metric": metric,
-        "subtitle": subtitle,
-        "tone": background,
-        "title_class": _tone_title_class(active_tone),
-        "metric_class": _tone_metric_class(active_tone),
-        "subtitle_class": _tone_subtitle_class(active_tone),
+        "tone": active_tone,
+        "icon_class": f"xc-icon-badge xc-icon-{active_tone}",
+        "icon": "check_circle" if not rows else TONE_ICONS.get(tone, "info"),
     }
 
 
@@ -451,74 +439,176 @@ def _build_operational_inspection_summary_cards(
 ):
     # 改动原因：独立巡检页需要先给出风险摘要，用户不必逐段滚动才能判断当前是否有异常。
     admin_path_configured = settings.ADMIN_PATH_CONFIGURED
+    admin_path_risk = 0 if admin_path_configured else 1
+    evm_gas_risk = resource_risk_summary["evm_low_native_balance_count"]
+    tron_resource_risk = resource_risk_summary["tron_low_resource_count"]
     return [
-        _summary_card(
-            title=_("任务消费风险"),
+        _metric_card(
+            title=_("任务消费"),
             metric=worker_health["risk_count"],
             subtitle=(
                 _("两组消费心跳均正常")
                 if worker_health["status"] == "ok"
                 else _("消费心跳异常，请查看巡检明细")
             ),
-            tone="danger",
-            active_count=worker_health["risk_count"],
-            background="bg-rose-50",
+            tone=_tone_or_neutral(worker_health["risk_count"], tone="danger"),
+            icon="monitor_heart",
         ),
-        _summary_card(
+        _metric_card(
             title=_("后台安全"),
-            metric=0 if admin_path_configured else 1,
+            metric=admin_path_risk,
             subtitle=(
                 _("ADMIN_PATH 已配置")
                 if admin_path_configured
                 else _("ADMIN_PATH 未设置")
             ),
-            tone="warning",
-            active_count=0 if admin_path_configured else 1,
-            background="bg-emerald-50" if admin_path_configured else "bg-orange-50",
+            tone=_tone_or_neutral(admin_path_risk, tone="warning"),
+            icon="lock",
         ),
-        _summary_card(
-            title=_("EVM Gas 风险"),
-            metric=resource_risk_summary["evm_low_native_balance_count"],
-            subtitle=_("Gas 余额不足 sender %(count)s 个")
-            % {"count": resource_risk_summary["evm_low_native_balance_count"]},
-            tone="danger",
-            active_count=resource_risk_summary["evm_low_native_balance_count"],
-            background="bg-rose-50",
+        _metric_card(
+            title=_("EVM Gas"),
+            metric=evm_gas_risk,
+            subtitle=_("Gas 余额不足 sender %(count)s 个") % {"count": evm_gas_risk},
+            tone=_tone_or_neutral(evm_gas_risk, tone="danger"),
+            icon="local_gas_station",
         ),
-        _summary_card(
-            title=_("Tron 资源风险"),
-            metric=resource_risk_summary["tron_low_resource_count"],
+        _metric_card(
+            title=_("Tron 资源"),
+            metric=tron_resource_risk,
             subtitle=_("Energy / Bandwidth 不足 sender %(count)s 个")
-            % {"count": resource_risk_summary["tron_low_resource_count"]},
-            tone="danger",
-            active_count=resource_risk_summary["tron_low_resource_count"],
-            background="bg-orange-50",
+            % {"count": tron_resource_risk},
+            tone=_tone_or_neutral(tron_resource_risk, tone="danger"),
+            icon="bolt",
         ),
-        _summary_card(
-            title=_("链上确认风险"),
+        _metric_card(
+            title=_("链上确认"),
             metric=snapshot["confirming_count"],
             subtitle=_("待链上确认 %(count)s 笔，临近超时 %(soon)s 笔")
             % {
                 "count": snapshot["confirming_count"],
                 "soon": snapshot["expiring_soon_count"],
             },
-            tone="warning",
-            active_count=snapshot["confirming_count"],
-            background="bg-amber-50",
+            tone=_tone_or_neutral(snapshot["confirming_count"], tone="warning"),
+            icon="hourglass_top",
         ),
-        _summary_card(
-            title=_("Webhook 巡检"),
+        _metric_card(
+            title=_("Webhook 堆积"),
             metric=snapshot["stalled_webhook_event_count"],
             subtitle=_("待投递 %(pending)s 条，失败事件 %(failed)s 条")
             % {
                 "pending": snapshot["pending_events_count"],
                 "failed": snapshot["failed_events_count"],
             },
-            tone="danger",
-            active_count=snapshot["stalled_webhook_event_count"],
-            background="bg-sky-50",
+            tone=_tone_or_neutral(
+                snapshot["stalled_webhook_event_count"], tone="danger"
+            ),
+            icon="webhook",
         ),
     ]
+
+
+# 30 日趋势图配色跟随 unfold 的 CSS 变量：app.js 会在渲染时把 var(--color-x)
+# 解析成实际色值，因此切换主题 / 改 UNFOLD["COLORS"] 时图表自动同步。
+CHART_MONEY_COLOR = "var(--color-primary-500)"
+CHART_CREATED_COLOR = "var(--color-blue-300)"
+CHART_EXPIRED_COLOR = "var(--color-orange-300)"
+
+
+def _build_trend_chart(chart_rows) -> str:
+    """把 30 日趋势拼成 Chart.js 数据结构。
+
+    金额与笔数量级差两三个数量级，必须分左右两轴；同时显式打开图例，
+    否则 unfold 默认隐藏图例，三条序列在图上无法区分。
+    """
+    return json.dumps(
+        {
+            "labels": [row["label"] for row in chart_rows],
+            "datasets": [
+                {
+                    "label": str(_("成交金额 (USD)")),
+                    "type": "line",
+                    "yAxisID": "y",
+                    "order": 0,
+                    "data": [float(row["completed_worth"]) for row in chart_rows],
+                    "backgroundColor": CHART_MONEY_COLOR,
+                    "borderColor": CHART_MONEY_COLOR,
+                    "borderWidth": 2,
+                    "tension": 0.35,
+                },
+                {
+                    "label": str(_("创建账单")),
+                    "type": "bar",
+                    "yAxisID": "y1",
+                    "order": 1,
+                    "data": [row["created_count"] for row in chart_rows],
+                    "backgroundColor": CHART_CREATED_COLOR,
+                    "borderColor": CHART_CREATED_COLOR,
+                },
+                {
+                    "label": str(_("超时账单")),
+                    "type": "bar",
+                    "yAxisID": "y1",
+                    "order": 2,
+                    "data": [row["expired_count"] for row in chart_rows],
+                    "backgroundColor": CHART_EXPIRED_COLOR,
+                    "borderColor": CHART_EXPIRED_COLOR,
+                },
+            ],
+        },
+    )
+
+
+def _build_trend_chart_options() -> str:
+    """趋势图的 Chart.js options。
+
+    注意 unfold 的 app.js 在传入 data-options 时【整体替换】默认配置，
+    所以 scales.x / scales.y 的 grid 必须显式声明：深色模式切换时
+    changeDarkModeSettings() 正是通过这两个对象回写网格线颜色。
+    """
+    axis_ticks = {"color": "#9ca3af"}
+    return json.dumps(
+        {
+            "responsive": True,
+            "maintainAspectRatio": False,
+            "interaction": {"mode": "index", "intersect": False},
+            "plugins": {
+                "legend": {
+                    "display": True,
+                    "position": "top",
+                    "align": "end",
+                    "labels": {
+                        "boxHeight": 6,
+                        "boxWidth": 6,
+                        "color": "#9ca3af",
+                        "pointStyle": "circle",
+                        "usePointStyle": True,
+                    },
+                },
+                "tooltip": {"enabled": True},
+            },
+            "scales": {
+                "x": {
+                    "grid": {"display": False, "tickWidth": 0},
+                    "border": {"width": 0},
+                    "ticks": {**axis_ticks, "maxTicksLimit": 10},
+                },
+                "y": {
+                    "position": "left",
+                    "beginAtZero": True,
+                    "grid": {"tickWidth": 0},
+                    "border": {"dash": [5, 5], "width": 0},
+                    "ticks": axis_ticks,
+                },
+                "y1": {
+                    "position": "right",
+                    "beginAtZero": True,
+                    "grid": {"display": False, "tickWidth": 0},
+                    "border": {"width": 0},
+                    "ticks": {**axis_ticks, "precision": 0},
+                },
+            },
+        },
+    )
 
 
 def dashboard_callback(request, context):
@@ -529,53 +619,75 @@ def dashboard_callback(request, context):
     inspection_payload = _build_operational_inspection_payload(
         metrics, worker_health=worker_health_for_request(request)
     )
+    invoice_changelist = reverse("admin:invoices_invoice_changelist")
+    event_changelist = reverse("admin:webhooks_webhookevent_changelist")
 
-    # 后台首页改为实时经营看板，优先展示商户最关心的成交、转化、积压和失败指标。
-    snapshot_cards = [
-        {
-            "title": _("今日成交额"),
-            "metric": _fmt_usd(snapshot["today_completed_worth"]),
-            "subtitle": _("今日成功账单收款 %(count)s 笔")
+    # 第一排只放「赚了多少钱」：今日 / 7 日 / 30 日成交额，是打开后台第一眼要看的结论。
+    revenue_cards = [
+        _metric_card(
+            title=_("今日成交额"),
+            metric=_fmt_usd(snapshot["today_completed_worth"]),
+            subtitle=_("成功账单 %(count)s 笔")
             % {"count": snapshot["today_completed_count"]},
-            "tone": "bg-emerald-50",
-        },
-        {
-            "title": _("7日成交额"),
-            "metric": _fmt_usd(snapshot["rolling_7d_completed_worth"]),
-            "subtitle": _("近7日成功账单收款 %(count)s 笔")
+            tone="success",
+            icon="today",
+        ),
+        _metric_card(
+            title=_("近 7 日成交额"),
+            metric=_fmt_usd(snapshot["rolling_7d_completed_worth"]),
+            subtitle=_("成功账单 %(count)s 笔")
             % {"count": snapshot["rolling_7d_completed_count"]},
-            "tone": "bg-sky-50",
-        },
-        {
-            "title": _("30日成交额"),
-            "metric": _fmt_usd(snapshot["rolling_30d_completed_worth"]),
-            "subtitle": _("近30日成功账单收款 %(count)s 笔")
+            tone="info",
+            icon="date_range",
+        ),
+        _metric_card(
+            title=_("近 30 日成交额"),
+            metric=_fmt_usd(snapshot["rolling_30d_completed_worth"]),
+            subtitle=_("成功账单 %(count)s 笔")
             % {"count": snapshot["rolling_30d_completed_count"]},
-            "tone": "bg-indigo-50",
-        },
+            tone="primary",
+            icon="calendar_month",
+        ),
+    ]
+
+    # 第二排是「健康度」：转化、在途资金、回调成功率。带比率的两项额外给进度条，
+    # 让百分比不用读数字就能感知高低。
+    health_cards = [
         {
-            "title": _("30日账单收款转化率"),
-            "metric": f"{snapshot['conversion_rate_30d']}%",
-            "subtitle": _("近30日共创建账单收款 %(count)s 笔")
-            % {"count": snapshot["created_30d_count"]},
-            "tone": "bg-amber-50",
+            **_metric_card(
+                title=_("30 日转化率"),
+                metric=f"{snapshot['conversion_rate_30d']}%",
+                subtitle=_("近 30 日共创建 %(count)s 笔账单")
+                % {"count": snapshot["created_30d_count"]},
+                tone="neutral",
+                icon="conversion_path",
+            ),
+            "progress": float(snapshot["conversion_rate_30d"]),
         },
-        {
-            "title": _("待链上确认收款"),
-            "metric": _fmt_usd(snapshot["confirming_worth"]),
-            "subtitle": _("已观察到付款 %(count)s 笔")
+        _metric_card(
+            title=_("待链上确认"),
+            metric=_fmt_usd(snapshot["confirming_worth"]),
+            subtitle=_("已观察到付款 %(count)s 笔")
             % {"count": snapshot["confirming_count"]},
-            "tone": "bg-orange-50",
-        },
+            tone=_tone_or_neutral(snapshot["confirming_count"], tone="warning"),
+            icon="hourglass_top",
+            href=f"{invoice_changelist}?status__exact=waiting&transfer__isnull=False",
+        ),
         {
-            "title": _("Webhook 健康度"),
-            "metric": f"{snapshot['webhook_success_rate_7d']}%",
-            "subtitle": _("近7日投递 %(total)s 次，失败投递 %(failed)s 次")
-            % {
-                "total": snapshot["webhook_attempt_total_7d"],
-                "failed": snapshot["webhook_attempt_failed_7d"],
-            },
-            "tone": "bg-rose-50",
+            **_metric_card(
+                title=_("Webhook 成功率"),
+                metric=f"{snapshot['webhook_success_rate_7d']}%",
+                subtitle=_("近 7 日投递 %(total)s 次，失败 %(failed)s 次")
+                % {
+                    "total": snapshot["webhook_attempt_total_7d"],
+                    "failed": snapshot["webhook_attempt_failed_7d"],
+                },
+                tone=_tone_or_neutral(
+                    snapshot["webhook_attempt_failed_7d"], tone="danger"
+                ),
+                icon="webhook",
+            ),
+            "progress": float(snapshot["webhook_success_rate_7d"]),
         },
     ]
 
@@ -584,51 +696,44 @@ def dashboard_callback(request, context):
             "label": _("待支付"),
             "value": snapshot["waiting_count"],
             "detail": _fmt_usd(snapshot["waiting_worth"]),
-            "href": f"{reverse('admin:invoices_invoice_changelist')}?status__exact=waiting",
+            "icon": "schedule",
+            "tone": "neutral",
+            "href": f"{invoice_changelist}?status__exact=waiting",
         },
         {
-            "label": _("待链上确认账单收款"),
+            "label": _("待链上确认"),
             "value": snapshot["confirming_count"],
             "detail": _fmt_usd(snapshot["confirming_worth"]),
-            "href": f"{reverse('admin:invoices_invoice_changelist')}?status__exact=waiting&transfer__isnull=False",
+            "icon": "hourglass_top",
+            "tone": _tone_or_neutral(snapshot["confirming_count"], tone="warning"),
+            "href": f"{invoice_changelist}?status__exact=waiting&transfer__isnull=False",
         },
         {
             "label": _("待投递事件"),
             "value": snapshot["pending_events_count"],
             "detail": _("等待 Webhook 调度"),
-            "href": f"{reverse('admin:webhooks_webhookevent_changelist')}?status__exact=pending",
+            "icon": "outbox",
+            "tone": "neutral",
+            "href": f"{event_changelist}?status__exact=pending",
         },
         {
             "label": _("失败事件"),
             "value": snapshot["failed_events_count"],
             "detail": _("需要人工检查或重投"),
-            "href": f"{reverse('admin:webhooks_webhookevent_changelist')}?status__exact=failed",
+            "icon": "error",
+            "tone": _tone_or_neutral(snapshot["failed_events_count"], tone="danger"),
+            "href": f"{event_changelist}?status__exact=failed",
         },
     ]
 
-    health_cards = [
-        {
-            "title": _("Webhook 投递"),
-            "metric": _("%(ok)s / %(total)s 成功")
-            % {
-                "ok": snapshot["webhook_attempt_ok_7d"],
-                "total": snapshot["webhook_attempt_total_7d"],
-            },
-            "subtitle": _("近7日成功率 %(rate)s%%")
-            % {"rate": snapshot["webhook_success_rate_7d"]},
-        },
-        {
-            "title": _("任务巡检"),
-            "metric": snapshot["stalled_webhook_event_count"],
-            "subtitle": _("超时回调"),
-        },
-    ]
+    for row in backlog_rows:
+        row["icon_class"] = f"xc-icon-badge xc-icon-{row['tone']}"
 
     context.update(
         {
-            "snapshot_cards": snapshot_cards,
-            "backlog_rows": backlog_rows,
+            "revenue_cards": revenue_cards,
             "health_cards": health_cards,
+            "backlog_rows": backlog_rows,
             "top_projects": [
                 {
                     "name": row["project__name"],
@@ -644,52 +749,34 @@ def dashboard_callback(request, context):
                 }
                 for row in metrics["top_projects"]
             ],
-            "payment_methods": [
-                {
-                    "label": f"{row['crypto__symbol']} / {row['chain__code']}",
-                    "gmv": _fmt_usd(row["gmv"]),
-                    "order_count": row["order_count"],
-                }
-                for row in metrics["payment_methods"]
-            ],
-            "attention_items": inspection_payload["attention_items"][:8],
-            "chart": json.dumps(
-                {
-                    "labels": [row["label"] for row in chart_rows],
-                    "datasets": [
-                        {
-                            "label": str(_("完成金额(USD)")),
-                            "type": "line",
-                            "yAxisID": "y",
-                            "data": [
-                                float(row["completed_worth"]) for row in chart_rows
-                            ],
-                            "backgroundColor": "#0f766e",
-                            "borderColor": "#0f766e",
-                            "tension": 0.35,
-                        },
-                        {
-                            "label": str(_("创建账单收款数")),
-                            "type": "bar",
-                            "yAxisID": "y1",
-                            "data": [row["created_count"] for row in chart_rows],
-                            "backgroundColor": "#93c5fd",
-                            "borderColor": "#60a5fa",
-                        },
-                        {
-                            "label": str(_("超时账单收款数")),
-                            "type": "bar",
-                            "yAxisID": "y1",
-                            "data": [row["expired_count"] for row in chart_rows],
-                            "backgroundColor": "#fdba74",
-                            "borderColor": "#fb923c",
-                        },
-                    ],
-                },
-            ),
+            "payment_methods": _build_payment_method_rows(metrics["payment_methods"]),
+            "attention_items": inspection_payload["attention_items"][:6],
+            "attention_total": len(inspection_payload["attention_items"]),
+            "inspection_url": reverse("operational-inspection"),
+            "chart": _build_trend_chart(chart_rows),
+            "chart_options": _build_trend_chart_options(),
         },
     )
     return context
+
+
+def _build_payment_method_rows(payment_methods) -> list[dict]:
+    """收款方式分布补上占比，让「哪条链在扛量」一眼可见。"""
+    total_gmv = sum(row["gmv"] for row in payment_methods)
+    rows = []
+    for row in payment_methods:
+        share = float(row["gmv"] / total_gmv * 100) if total_gmv else 0.0
+        rows.append(
+            {
+                "symbol": row["crypto__symbol"],
+                "chain": row["chain__code"],
+                "gmv": _fmt_usd(row["gmv"]),
+                # 计数单位必须走 gettext：写在模板里拼 "笔" 会在英文界面露出中文。
+                "order_label": _("%(count)s 笔") % {"count": row["order_count"]},
+                "share": round(share, 1),
+            }
+        )
+    return rows
 
 
 def operational_inspection_view(request):

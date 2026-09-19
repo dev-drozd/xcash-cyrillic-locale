@@ -4,7 +4,7 @@
 
 {% block breadcrumbs %}{% endblock %}
 {% block title %}
-    {% trans '控制台 | Xcash' %}
+    {% trans '经营看板 | Xcash' %}
 {% endblock %}
 
 {% block branding %}
@@ -22,154 +22,166 @@
 
 {% block content %}
     {% component "unfold/components/container.html" %}
-        {# 改动原因：首页底部内容直接贴近视口边缘，补充稳定的底部留白提升整体呼吸感。 #}
-        <div class="pb-12 md:pb-16">
-            {# 改动原因：旧版首页展示余额/返佣等占位字段，与支付网关商户的真实运营诉求脱节。 #}
-            <div class="mb-8">
-                {% component "unfold/components/title.html" with class="text-3xl mb-2" %}
-                    {% translate "经营看板" %}
-                {% endcomponent %}
-                {% component "unfold/components/text.html" with class="text-gray-500" %}
-                    {% translate "围绕成交、转化、积压与回调健康度的实时概览。" %}
-                {% endcomponent %}
+        {# 页面按「赚了多少 → 健康不健康 → 趋势与积压 → 谁在贡献 → 要处理什么」自上而下收敛。 #}
+        <div class="flex flex-col gap-8 pb-12">
+
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    {% component "unfold/components/title.html" with class="text-3xl mb-1" %}
+                        {% translate "经营看板" %}
+                    {% endcomponent %}
+                    {% component "unfold/components/text.html" with class="text-base-500" %}
+                        {% translate "围绕成交、转化、积压与回调健康度的实时概览。" %}
+                    {% endcomponent %}
+                </div>
+
+                {% if attention_total %}
+                    <a href="{{ inspection_url }}"
+                       class="inline-flex items-center gap-2 rounded-default border border-red-600 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 dark:border-red-500 dark:bg-red-950 dark:text-red-400">
+                        <span class="material-symbols-outlined text-base">health_and_safety</span>
+                        {% blocktranslate with count=attention_total %}{{ count }} 项待处理异常{% endblocktranslate %}
+                    </a>
+                {% else %}
+                    <span class="inline-flex items-center gap-2 rounded-default border border-green-700 bg-green-50 px-3 py-2 text-sm font-medium text-green-700 dark:border-green-500 dark:bg-green-950 dark:text-green-400">
+                        <span class="material-symbols-outlined text-base">check_circle</span>
+                        {% translate "暂无异常" %}
+                    </span>
+                {% endif %}
             </div>
 
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 mb-8">
-                {% for item in snapshot_cards %}
-                    {% component "unfold/components/card.html" with class=item.tone %}
-                        {% component "unfold/components/text.html" with class="text-gray-500" %}
-                            {{ item.title }}
-                        {% endcomponent %}
-                        {% component "unfold/components/title.html" with class="text-3xl mt-2" %}
-                            {{ item.metric }}
-                        {% endcomponent %}
-                        {% component "unfold/components/text.html" with class="text-sm mt-3 text-gray-500" %}
-                            {{ item.subtitle }}
-                        {% endcomponent %}
-                    {% endcomponent %}
+            {# 成交额三档：今日 / 7 日 / 30 日，卡片左侧色条区分时间跨度。 #}
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {% for item in revenue_cards %}
+                    {% include "admin/includes/xcash_metric_card.html" %}
                 {% endfor %}
             </div>
 
-            <div class="grid gap-8 xl:grid-cols-[2fr_1fr] mb-8">
-                {% trans "30日订单趋势" as title %}
-                {% component "unfold/components/card.html" with title=title %}
-                    {% component "unfold/components/chart/bar.html" with data=chart height=320 %}{% endcomponent %}
-                {% endcomponent %}
+            {# 健康度三项：转化率、在途资金、回调成功率；比率项带进度条。 #}
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {% for item in health_cards %}
+                    {% include "admin/includes/xcash_metric_card.html" %}
+                {% endfor %}
+            </div>
 
-                {% trans "当前积压与风险" as title %}
-                {% component "unfold/components/card.html" with title=title %}
-                    <div class="divide-y divide-gray-200">
+            <div class="grid gap-6 xl:grid-cols-3">
+                <div class="xl:col-span-2">
+                    {% trans "30 日趋势" as trend_title %}
+                    {% trans "成交金额走左轴，账单笔数走右轴" as trend_description %}
+                    {% component "unfold/components/card.html" with title=trend_title description=trend_description title_icon="show_chart" %}
+                        {% component "unfold/components/chart/line.html" with data=chart options=chart_options height=300 %}{% endcomponent %}
+                    {% endcomponent %}
+                </div>
+
+                {% trans "当前积压" as backlog_title %}
+                {% trans "点击任意一项跳转到对应筛选结果" as backlog_description %}
+                {% component "unfold/components/card.html" with title=backlog_title description=backlog_description title_icon="inbox" %}
+                    <div class="xc-rows">
                         {% for row in backlog_rows %}
-                            <a href="{{ row.href }}" class="block py-4 first:pt-0 last:pb-0">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <div class="text-sm text-gray-500">{{ row.label }}</div>
-                                        <div class="text-xs text-gray-400 mt-1">{{ row.detail }}</div>
-                                    </div>
-                                    <div class="text-2xl font-semibold text-gray-900">{{ row.value }}</div>
-                                </div>
+                            <a href="{{ row.href }}"
+                               class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                                <span class="flex items-center gap-3">
+                                    <span class="{{ row.icon_class }}">
+                                        <span class="material-symbols-outlined">{{ row.icon }}</span>
+                                    </span>
+                                    <span class="flex flex-col">
+                                        <span class="font-medium text-important">{{ row.label }}</span>
+                                        <span class="text-xs text-base-400">{{ row.detail }}</span>
+                                    </span>
+                                </span>
+                                <span class="xc-num text-2xl font-semibold text-important">{{ row.value }}</span>
                             </a>
                         {% endfor %}
                     </div>
                 {% endcomponent %}
             </div>
 
-            <div class="grid gap-8 xl:grid-cols-2 mb-8">
-                {% trans "项目表现排行（30日）" as title %}
-                {% component "unfold/components/card.html" with title=title %}
+            <div class="grid gap-6 xl:grid-cols-2">
+                {% trans "项目表现排行" as projects_title %}
+                {% trans "近 30 日按成交额排序" as projects_description %}
+                {% component "unfold/components/card.html" with title=projects_title description=projects_description title_icon="leaderboard" %}
                     <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead class="text-left text-gray-500">
-                            <tr>
-                                <th class="py-2 pr-4">{% translate "项目" %}</th>
-                                <th class="py-2 pr-4">{% translate "成交额" %}</th>
-                                <th class="py-2 pr-4">{% translate "成功单" %}</th>
-                                <th class="py-2 pr-4">{% translate "转化率" %}</th>
-                                <th class="py-2">{% translate "在途" %}</th>
-                            </tr>
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-base-200 text-left text-xs text-base-400 dark:border-base-800">
+                                    <th class="py-2 pr-4 font-medium">{% translate "项目" %}</th>
+                                    <th class="py-2 pr-4 text-right font-medium">{% translate "成交额" %}</th>
+                                    <th class="py-2 pr-4 text-right font-medium">{% translate "成功单" %}</th>
+                                    <th class="py-2 pr-4 text-right font-medium">{% translate "转化率" %}</th>
+                                    <th class="py-2 text-right font-medium">{% translate "在途" %}</th>
+                                </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200">
-                            {% for row in top_projects %}
-                                <tr>
-                                    <td class="py-3 pr-4 font-medium">{{ row.name }}</td>
-                                    <td class="py-3 pr-4">{{ row.gmv }}</td>
-                                    <td class="py-3 pr-4">{{ row.completed_orders }}</td>
-                                    <td class="py-3 pr-4">{{ row.conversion_rate }}</td>
-                                    <td class="py-3">{{ row.waiting_orders }}/{{ row.confirming_orders }}</td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="5" class="py-6 text-center text-gray-400">{% translate "暂无成交数据" %}</td>
-                                </tr>
-                            {% endfor %}
+                            <tbody class="xc-rows">
+                                {% for row in top_projects %}
+                                    <tr>
+                                        <td class="py-3 pr-4 font-medium text-important">{{ row.name }}</td>
+                                        <td class="xc-num py-3 pr-4 text-right whitespace-nowrap">{{ row.gmv }}</td>
+                                        <td class="xc-num py-3 pr-4 text-right">{{ row.completed_orders }}</td>
+                                        <td class="xc-num py-3 pr-4 text-right">{{ row.conversion_rate }}</td>
+                                        <td class="xc-num py-3 text-right text-base-400">{{ row.waiting_orders }} / {{ row.confirming_orders }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="xc-empty">{% translate "暂无成交数据" %}</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 {% endcomponent %}
 
-                {% trans "账单收款方式分布（30日）" as title %}
-                {% component "unfold/components/card.html" with title=title %}
-                    <div class="divide-y divide-gray-200">
+                {% trans "收款方式分布" as methods_title %}
+                {% trans "近 30 日成交额占比" as methods_description %}
+                {% component "unfold/components/card.html" with title=methods_title description=methods_description title_icon="donut_small" %}
+                    <div class="flex flex-col gap-4">
                         {% for row in payment_methods %}
-                            <div class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-                                <div>
-                                    <div class="font-medium">{{ row.label }}</div>
-                                    <div class="text-xs text-gray-400 mt-1">{% translate "成功账单收款" %} {{ row.order_count }} {% translate "笔" %}</div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center justify-between gap-4">
+                                    <span class="flex items-center gap-2">
+                                        <span class="font-medium text-important">{{ row.symbol }}</span>
+                                        <span class="inline-block rounded-default bg-base-500/8 px-2 text-[11px] leading-5 text-base-700 dark:bg-base-500/20 dark:text-base-200">{{ row.chain }}</span>
+                                    </span>
+                                    <span class="xc-num text-sm font-semibold whitespace-nowrap">{{ row.gmv }}</span>
                                 </div>
-                                <div class="text-sm font-semibold">{{ row.gmv }}</div>
+                                {% component "unfold/components/progress.html" with value=row.share description=row.order_label %}{% endcomponent %}
                             </div>
                         {% empty %}
-                            <div class="py-6 text-center text-gray-400">{% translate "暂无账单收款方式分布数据" %}</div>
+                            <div class="xc-empty">{% translate "暂无收款方式分布数据" %}</div>
                         {% endfor %}
                     </div>
                 {% endcomponent %}
             </div>
 
-            <div class="grid gap-8 xl:grid-cols-[1fr_2fr]">
-                {% trans "系统健康" as title %}
-                {% component "unfold/components/card.html" with title=title %}
-                    <div class="space-y-4">
-                        {% for item in health_cards %}
-                            <div class="rounded-2xl bg-gray-50 px-4 py-4">
-                                <div class="text-sm text-gray-500">{{ item.title }}</div>
-                                <div class="text-2xl font-semibold mt-2">{{ item.metric }}</div>
-                                <div class="text-xs text-gray-400 mt-2">{{ item.subtitle }}</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endcomponent %}
+            {% trans "需要关注" as attention_title %}
+            {% trans "按严重程度排在最前的异常，完整清单见异常巡检" as attention_description %}
+            {% component "unfold/components/card.html" with title=attention_title description=attention_description title_icon="notification_important" %}
+                <div class="xc-rows">
+                    {% for item in attention_items %}
+                        <a href="{{ item.href|default:inspection_url }}"
+                           class="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                            <span class="flex items-start gap-3">
+                                <span class="{{ item.icon_class }}">
+                                    <span class="material-symbols-outlined">{{ item.icon }}</span>
+                                </span>
+                                <span class="flex flex-col">
+                                    <span class="font-medium text-important">{{ item.title }}</span>
+                                    <span class="text-sm text-base-400">{{ item.description }}</span>
+                                </span>
+                            </span>
+                            {% component "unfold/helpers/label.html" with text=item.level variant=item.tone size="md" %}{% endcomponent %}
+                        </a>
+                    {% empty %}
+                        <div class="xc-empty">{% translate "当前没有需要人工介入的异常项" %}</div>
+                    {% endfor %}
+                </div>
 
-                {% trans "需要关注" as title %}
-                {% component "unfold/components/card.html" with title=title %}
-                    <div class="divide-y divide-gray-200">
-                        {% for item in attention_items %}
-                            {% if item.href %}
-                                <a href="{{ item.href }}" class="block py-4 first:pt-0 last:pb-0">
-                                    <div class="flex items-start justify-between gap-4">
-                                        <div>
-                                            <div class="font-medium">{{ item.title }}</div>
-                                            <div class="text-sm text-gray-500 mt-1">{{ item.description }}</div>
-                                        </div>
-                                        <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{{ item.level }}</span>
-                                    </div>
-                                </a>
-                            {% else %}
-                                <div class="block py-4 first:pt-0 last:pb-0">
-                                    <div class="flex items-start justify-between gap-4">
-                                        <div>
-                                            <div class="font-medium">{{ item.title }}</div>
-                                            <div class="text-sm text-gray-500 mt-1">{{ item.description }}</div>
-                                        </div>
-                                        <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{{ item.level }}</span>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% empty %}
-                            <div class="py-6 text-center text-gray-400">{% translate "当前没有需要人工介入的异常项" %}</div>
-                        {% endfor %}
-                    </div>
-                {% endcomponent %}
-            </div>
+                {% if attention_total > attention_items|length %}
+                    <a href="{{ inspection_url }}"
+                       class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400">
+                        {% blocktranslate with count=attention_total %}查看全部 {{ count }} 项{% endblocktranslate %}
+                        <span class="material-symbols-outlined text-base">arrow_forward</span>
+                    </a>
+                {% endif %}
+            {% endcomponent %}
         </div>
     {% endcomponent %}
 {% endblock %}
