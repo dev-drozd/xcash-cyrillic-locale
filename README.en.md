@@ -434,8 +434,11 @@ A failed check exits nonzero. Beat stays stopped if the first check fails and is
 application processes remain available for diagnosis. These checks cover the local HTTP and task pipeline;
 external monitoring must still cover public TLS and chain RPC health.
 
-The script runs production migrations separately, then initializes reference data and the administrator
-in one Django process. Only after initialization succeeds does a temporary Compose override start Django
+Production migrations, reference data, and administrator initialization run sequentially in one temporary
+container and one Django process. Even an empty migration plan still runs migrate to maintain database
+triggers through post_migrate. A dedicated initialization failure exit code distinguishes failure after
+migrations from migration failure; interruptions with unknown migration completion never trigger recovery.
+Only after initialization succeeds does a temporary Compose override start Django
 with `/start --prepared`, avoiding duplicate initialization. Ordinary `docker compose up -d` still uses
 `/start` to initialize a fresh deployment without changes to `.env`.
 Failed initialization is retried once; a second failure leaves application services stopped.
@@ -450,6 +453,13 @@ execution receipts; that remaining wait is separate from HTTP downtime.
 Normal worker shutdown uses Celery warm shutdown: idle workers exit immediately, while running tasks finish.
 The 330-second container grace period covers the current longest production task's 290-second hard limit plus cleanup.
 This is an upper bound, not a fixed delay. Revisit the shutdown budget and monitoring window when adding longer tasks.
+
+Django, both workers, and Beat share the local `xcash-app:local` image (prefixed with the Compose project
+name when customized). Only Django defines the application build; Caddy is built separately.
+A full `docker compose up -d` builds missing images for a fresh deployment. Before starting a worker alone,
+run `docker compose build django`. The upgrade script builds both application and Caddy images automatically.
+Python dependencies and source code use separate layers, so source-only edits reuse dependency installation
+and the `.venv` copy layer, reducing image export and unpacking overhead.
 
 Local image builds recursively exclude `.env*`, backups, and the local mainnet deployment directory.
 Inject runtime secrets through `env_file`. Keep custom environment files with other names outside the build context,

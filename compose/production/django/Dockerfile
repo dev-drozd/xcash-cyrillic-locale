@@ -22,12 +22,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project --group production --no-group dev
-COPY . ${APP_HOME}
-
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --group production --no-group dev
+# 项目配置 package=false，不安装项目包；无需复制源码后再次 uv sync。
 
 # Python 'run' stage
 FROM python:3.13-slim-bookworm AS python-run-stage
@@ -51,6 +46,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
+# 依赖单独成层，并放在经常改动的启动脚本和源码之前。只改业务代码时不再
+# 将整个 .venv 重新写入新镜像层，也不重新导出/解包这份大依赖层。
+COPY --from=python-build-stage --chown=django:django ${APP_HOME}/.venv ${APP_HOME}/.venv
+
 # 复制项目启动脚本
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
 COPY --chown=django:django ./compose/production/django/start /start
@@ -60,8 +59,8 @@ RUN set -eux; \
     sed -i 's/\r$//g' /entrypoint /start /start-worker /start-beat; \
     chmod +x /entrypoint /start /start-worker /start-beat
 
-# Copy the application from the builder
-COPY --from=python-build-stage --chown=django:django ${APP_HOME} ${APP_HOME}
+# 源码独立成层；.dockerignore 排除本地虚拟环境和运行密钥。
+COPY --chown=django:django . ${APP_HOME}
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH" \

@@ -4,6 +4,11 @@ import time
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
+
+# upgrade.sh 的阶段协议：仅在 migrate（含 post_migrate）完整返回后，初始化失败才
+# 返回 20。迁移失败或进程被终止仍返回普通非零状态，脚本必须按迁移状态未知处理。
+SETUP_FAILURE_EXIT_CODE = 20
 
 
 class Command(BaseCommand):
@@ -13,21 +18,29 @@ class Command(BaseCommand):
         parser.add_argument("--skip-migrations", action="store_true")
 
     def handle(self, *args, **options):
-        # 升级脚本单独执行 migrate，以区分迁移中失败与迁移后的初始化失败。
-        # 普通 docker compose up 仍走完整初始化，不能依赖宿主机上的升级标记。
-        commands = (
-            [] if options["skip_migrations"] else [("migrate", {"interactive": False})]
+        if not options["skip_migrations"]:
+            try:
+                self.run_step("migrate", interactive=False)
+            except CommandError as exc:
+                # 子命令自定义的退出码不得冒充“迁移完成”，统一按迁移失败退出。
+                raise CommandError(str(exc)) from exc
+        # 仅已知迁移完成的失败恢复路径使用 --skip-migrations；正常升级和首次部署
+        # 均在同一进程运行三个步骤，不省略空迁移计划下的 post_migrate 触发器维护。
+        try:
+            self.run_step("ensure_default_reference_data")
+            self.run_step("ensure_default_superuser")
+        except Exception as exc:
+            raise CommandError(
+                f"runtime initialization failed after migrations: {exc}",
+                returncode=SETUP_FAILURE_EXIT_CODE,
+            ) from exc
+
+    def run_step(self, name, **kwargs):
+        started = time.monotonic()
+        self.stdout.write(f"[bootstrap] {name} started")
+        self.stdout.flush()
+        call_command(name, stdout=self.stdout, stderr=self.stderr, **kwargs)
+        self.stdout.write(
+            f"[bootstrap] {name} completed in {time.monotonic() - started:.1f}s"
         )
-        commands += [
-            ("ensure_default_reference_data", {}),
-            ("ensure_default_superuser", {}),
-        ]
-        for name, kwargs in commands:
-            started = time.monotonic()
-            self.stdout.write(f"[bootstrap] {name} started")
-            self.stdout.flush()
-            call_command(name, stdout=self.stdout, stderr=self.stderr, **kwargs)
-            self.stdout.write(
-                f"[bootstrap] {name} completed in {time.monotonic() - started:.1f}s"
-            )
-            self.stdout.flush()
+        self.stdout.flush()

@@ -29,10 +29,10 @@ x-logging: &default-logging
 #
 # django / worker / worker-scan / beat 共享配置，容器名由各服务单独声明。
 x-django-base: &django-base
-  build:
-    context: .
-    dockerfile: ./compose/production/django/Dockerfile
-    target: python-run-stage
+  # 同一发布只构建一份应用镜像，四个进程角色共享。镜像由 django 的 build 产生，
+  # 禁止从公共仓库拉取同名镜像；首次完整 up 会先构建，再创建各服务。
+  image: ${COMPOSE_PROJECT_NAME:-xcash}-app:local
+  pull_policy: never
   restart: unless-stopped
   logging: *default-logging
   # 依赖就绪后才启动，避免首次部署时 migrate 撞上尚未初始化完成的 Postgres。
@@ -131,6 +131,10 @@ services:
 
   django:
     <<: *django-base
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+      target: python-run-stage
     container_name: xcash_django
     # 普通部署自动迁移并初始化；upgrade.sh 准备成功后用临时 override 跳过重复初始化。
     command: /start

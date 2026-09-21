@@ -75,13 +75,17 @@ elif command in ("run", "exec") and "manage.py" in args:
     elif operation == ["migrate", "--noinput"]:
         if failure == ("rehearsal" if rehearsal else "production_migrate"):
             sys.exit(23)
-    elif not rehearsal and operation == ["bootstrap_runtime", "--skip-migrations"]:
+    elif not rehearsal and operation[:1] == ["bootstrap_runtime"]:
+        if "--skip-migrations" not in operation and failure == "production_migrate":
+            sys.exit(1)
+        if failure == "bootstrap_interrupted":
+            sys.exit(137)
         attempts = sum(
             '"bootstrap_runtime"' in line
             for line in Path(os.environ["COMMAND_LOG"]).read_text().splitlines()
         )
         if failure == "bootstrap" or (failure == "bootstrap_once" and attempts == 1):
-            sys.exit(23)
+            sys.exit(20)
     elif operation[:1] == ["wait_for_runtime"]:
         if failure == "ready_" + operation[operation.index("--phase") + 1]:
             sys.exit(23)
@@ -172,11 +176,6 @@ def test_upgrade_switches_old_processes_before_starting_new_beat(
     stop_beat = commands.index(["stop", "beat"])
     stop_workers = commands.index(["stop", "worker", "worker-scan"])
     stop_django = commands.index(["stop", "django"])
-    migrate = next(
-        index
-        for index, command in enumerate(commands)
-        if "POSTGRES_HOST=db" in command and command[-2:] == ["migrate", "--noinput"]
-    )
     start_runtime = command_index(commands, ["up"], contains="worker")
     start_beat = commands.index(["up", "-d", "--no-deps", "beat"])
     consumers_ready = command_index(commands, ["exec"], contains="consumers")
@@ -187,7 +186,6 @@ def test_upgrade_switches_old_processes_before_starting_new_beat(
         < stop_beat
         < stop_workers
         < stop_django
-        < migrate
         < bootstrap
         < start_runtime
         < start_beat
@@ -197,6 +195,10 @@ def test_upgrade_switches_old_processes_before_starting_new_beat(
     assert commands.count(["stop", "worker", "worker-scan"]) == 1
     assert commands.count(["stop", "django"]) == 1
     assert sum("bootstrap_runtime" in c for c in commands) == 1
+    assert commands[bootstrap][-1] == "bootstrap_runtime"
+    assert not any(
+        "POSTGRES_HOST=db" in c and c[-2:] == ["migrate", "--noinput"] for c in commands
+    )
     assert not any(c[0] == "run" and "wait_for_runtime" in c for c in commands)
     rehearsal = [c for c in commands if "POSTGRES_HOST=migration-rehearsal-db" in c]
     assert bool(rehearsal) is migrations
@@ -219,6 +221,7 @@ def test_pending_plan_failure_aborts_before_stopping_services(run_upgrade):
     result, commands = run_upgrade(failure="pending_plan")
     assert result.returncode != 0
     assert not any(c[0] in ("stop", "start") for c in commands)
+    assert not any("bootstrap_runtime" in c for c in commands)
     assert not any(c[-2:] == ["migrate", "--noinput"] for c in commands)
 
 
@@ -250,8 +253,9 @@ def test_pre_migration_failure_restores_only_previously_running_containers(
     assert not any(c[0] == "up" and "worker" in c for c in commands)
 
 
-def test_failed_production_migration_does_not_restart_apps(run_upgrade):
-    result, commands = run_upgrade(failure="production_migrate")
+@pytest.mark.parametrize("failure", ["production_migrate", "bootstrap_interrupted"])
+def test_failed_or_unconfirmed_migration_does_not_restart_apps(run_upgrade, failure):
+    result, commands = run_upgrade(failure=failure)
     assert result.returncode != 0
     assert ["stop", "beat"] in commands
     assert not any(c[0] in ("start", "up") and "worker" in c for c in commands)
@@ -265,6 +269,8 @@ def test_post_migration_recovery_retries_setup_before_starting_services(run_upgr
     beat = commands.index(["up", "-d", "--no-deps", "beat"])
     bootstrap = [i for i, c in enumerate(commands) if "bootstrap_runtime" in c]
     assert len(bootstrap) == 2
+    assert commands[bootstrap[0]][-1] == "bootstrap_runtime"
+    assert commands[bootstrap[-1]][-1] == "--skip-migrations"
     assert bootstrap[-1] < runtime < beat
     assert not any(c[0] == "start" for c in commands)
 
@@ -287,6 +293,7 @@ def test_worker_stop_failure_does_not_take_http_down(run_upgrade):
     result, commands = run_upgrade(failure="stop_workers")
     assert result.returncode != 0
     assert ["stop", "django"] not in commands
+    assert not any("bootstrap_runtime" in c for c in commands)
     assert not any(c[-2:] == ["migrate", "--noinput"] for c in commands)
 
 

@@ -455,11 +455,22 @@ fi
 # cleanup 才会按新 schema 尝试拉起服务。
 PRODUCTION_MIGRATE_STARTED=true
 
-run_stage "apply production migrations" run_main_manage db migrate --noinput 2>&1 \
-  | tee "${TMP_DIR}/main-production-migrate.log"
-PRODUCTION_MIGRATE_COMPLETED=true
-
-prepare_application
+bootstrap_result=0
+run_stage "migrate and initialize production runtime" run_main_manage db bootstrap_runtime 2>&1 \
+  | tee "${TMP_DIR}/main-production-bootstrap.log" || bootstrap_result=$?
+# bootstrap_runtime 仅用 20 表示 migrate 完成后的初始化失败。其他错误（包括
+# 容器中断、信号退出、日志管道失败）均不能证明迁移完成，不自动恢复业务进程。
+case "${bootstrap_result}" in
+  0)
+    PRODUCTION_MIGRATE_COMPLETED=true
+    PRODUCTION_SETUP_COMPLETED=true
+    ;;
+  20)
+    PRODUCTION_MIGRATE_COMPLETED=true
+    exit "${bootstrap_result}"
+    ;;
+  *) exit "${bootstrap_result}" ;;
+esac
 
 log "start application services"
 start_application_services
