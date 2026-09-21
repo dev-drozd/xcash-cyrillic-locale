@@ -149,6 +149,25 @@ class TronHttpClient:
 
         raise TronClientError(f"{request_label} from {chain_code}") from last_exc
 
+    def get_energy_fee(self) -> int:
+        """读取当前 sun/Energy 单价；缺失或异常时拒绝构造能量预算。"""
+        response = self._request_with_retry(
+            method="GET",
+            url=f"{self.base_url}/wallet/getchainparameters",
+            request_label="failed to fetch chain parameters",
+        )
+        try:
+            payload = response.json()
+            for parameter in payload["chainParameter"]:
+                if parameter.get("key") == "getEnergyFee":
+                    value = parameter.get("value")
+                    if type(value) is int and value > 0:
+                        return value
+                    break
+        except (ValueError, TypeError, KeyError, AttributeError) as exc:
+            raise TronClientError(f"invalid energy fee from {self.chain.code}") from exc
+        raise TronClientError(f"invalid energy fee from {self.chain.code}")
+
     def get_latest_solid_block_number(self) -> int:
         response = self._request_with_retry(
             method="GET",

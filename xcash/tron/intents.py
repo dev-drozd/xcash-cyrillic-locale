@@ -4,12 +4,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import eth_abi
-from tron.constants import TRON_NILE_VAULT_SLOT_DEFAULT_FEE_LIMIT
-from tron.constants import TRON_VAULT_SLOT_FEE_LIMIT
 from tron.contracts_codec import tron_base58_to_evm_address
 from web3 import Web3
 
-from chains.constants import ChainCode
 from chains.models import TxTaskType
 
 if TYPE_CHECKING:
@@ -42,8 +39,8 @@ def build_contract_call_intent(
     tx_type: TxTaskType,
     verify_fn: Callable[[], None] | None = None,
 ) -> TronTxIntent:
-    if fee_limit <= 0:
-        raise ValueError("fee_limit must be > 0")
+    if fee_limit < 0:
+        raise ValueError("fee_limit must be >= 0")
     try:
         bytes.fromhex(parameter)
     except ValueError as exc:
@@ -59,12 +56,6 @@ def build_contract_call_intent(
         tx_type=tx_type,
         verify_fn=verify_fn,
     )
-
-
-def vault_slot_fee_limit_for_chain(chain: Chain) -> int:
-    if chain.code == ChainCode.Nile:
-        return TRON_NILE_VAULT_SLOT_DEFAULT_FEE_LIMIT
-    return TRON_VAULT_SLOT_FEE_LIMIT
 
 
 def build_vault_slot_deploy_intent(
@@ -88,7 +79,8 @@ def build_vault_slot_deploy_intent(
         contract_address=factory_address,
         function_selector_value="deployVaultSlot(address,bytes32)",
         parameter=parameter,
-        fee_limit=vault_slot_fee_limit_for_chain(chain),
+        # 任务入队时尚未估算；广播前按实时能量报价生成 fee_limit。
+        fee_limit=0,
         tx_type=TxTaskType.VaultSlotDeploy,
         verify_fn=verify_fn,
     )
@@ -112,7 +104,7 @@ def build_vault_slot_collect_intent(
         contract_address=slot_address,
         function_selector_value="collect(address)",
         parameter=parameter,
-        fee_limit=vault_slot_fee_limit_for_chain(chain),
+        fee_limit=0,
         tx_type=TxTaskType.VaultSlotCollect,
         verify_fn=verify_fn,
     )

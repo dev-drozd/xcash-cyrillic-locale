@@ -20,7 +20,6 @@ from django.utils import timezone
 from tron.admin import TronWatchCursorAdmin
 from tron.client import TronClientError
 from tron.client import TronHttpClient
-from tron.constants import TRON_VAULT_SLOT_FEE_LIMIT
 from tron.models import TRON_MAX_BROADCAST_HASHES
 from tron.models import TRON_SIMULATION_REVERT_FAIL_MIN_COUNT
 from tron.models import TRON_SIMULATION_REVERT_FAIL_MIN_WINDOW
@@ -412,6 +411,55 @@ class TronTransferConfirmationTests(TestCase):
 @override_settings(TRON_RPC_TIMEOUT=3.0)
 @patch("tron.client._TRON_HTTP_RETRY_BACKOFF_SECONDS", (0, 0))
 class TronHttpClientTests(SimpleTestCase):
+    @patch("tron.client.httpx.get")
+    def test_get_energy_fee_reads_live_chain_parameter(self, get_mock):
+        chain = SimpleNamespace(code=ChainCode.Tron, tron_api_key="")
+        client = TronHttpClient(chain=chain)
+        for price in (100, 420):
+            with self.subTest(price=price):
+                get_mock.return_value.json.return_value = {
+                    "chainParameter": [
+                        {"key": "getTransactionFee", "value": 1_000},
+                        {"key": "getEnergyFee", "value": price},
+                    ],
+                }
+                self.assertEqual(client.get_energy_fee(), price)
+        self.assertEqual(
+            get_mock.call_args.args[0],
+            f"{client.base_url}/wallet/getchainparameters",
+        )
+        self.assertEqual(get_mock.call_args.kwargs["timeout"], 3.0)
+
+    @patch("tron.client.httpx.get")
+    def test_get_energy_fee_rejects_missing_or_invalid_price(self, get_mock):
+        client = TronHttpClient(
+            chain=SimpleNamespace(code=ChainCode.Tron, tron_api_key=""),
+        )
+        payloads = [None, [], {}, {"chainParameter": []}, {"chainParameter": [None]}]
+        payloads.extend(
+            {"chainParameter": [{"key": "getEnergyFee", "value": value}]}
+            for value in (None, 0, -1, True, 100.5, "invalid")
+        )
+        for payload in payloads:
+            with self.subTest(payload=payload):
+                get_mock.return_value.json.return_value = payload
+                with self.assertRaisesMessage(TronClientError, "invalid energy fee"):
+                    client.get_energy_fee()
+        get_mock.return_value.json.side_effect = ValueError("invalid JSON")
+        with self.assertRaisesMessage(TronClientError, "invalid energy fee"):
+            client.get_energy_fee()
+
+    @patch("tron.client.httpx.get")
+    def test_get_energy_fee_wraps_network_failure(self, get_mock):
+        get_mock.side_effect = httpx.ConnectError("unavailable")
+        client = TronHttpClient(
+            chain=SimpleNamespace(code=ChainCode.Tron, tron_api_key=""),
+        )
+        with self.assertRaisesMessage(
+            TronClientError, "failed to fetch chain parameters"
+        ):
+            client.get_energy_fee()
+
     @patch("tron.client._TRON_HTTP_RETRY_BACKOFF_SECONDS", (0, 0))
     @patch("tron.client.httpx.get")
     def test_retry_error_uses_chain_code_when_chain_field_is_absent(self, get_mock):
@@ -783,7 +831,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
             to="TWd4WrZ9wn84f5x1hZhL4DHvk738ns5jwb",
             function_selector="collect(address)",
             parameter="00" * 32,
-            fee_limit=TRON_VAULT_SLOT_FEE_LIMIT,
+            fee_limit=5_000_000,
         )
 
     def unsigned_transaction(
@@ -791,10 +839,11 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
         *,
         contract_address: str | None = None,
         visible_addresses: bool = False,
+        fee_limit: int = 120_000,
+        raw_data_hex: str = "0a02abcd",
     ) -> dict:
         from tron.codec import TronAddressCodec
 
-        raw_data_hex = "0a02abcd"
         contract_address = contract_address or "TWd4WrZ9wn84f5x1hZhL4DHvk738ns5jwb"
         owner_value = (
             self.sender.address
@@ -820,7 +869,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
                 }
             ],
             "expiration": 123,
-            "fee_limit": TRON_VAULT_SLOT_FEE_LIMIT,
+            "fee_limit": fee_limit,
         }
         return {
             "raw_data_hex": raw_data_hex,
@@ -839,6 +888,118 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
             raw_transaction=raw_transaction,
         )
 
+    @override_settings(TRON_RESOURCE_SAFETY_MARGIN_BPS=12_000)
+    @patch("tron.models.TronHttpClient")
+    @patch("chains.models.Address.sign_tron_transaction")
+    def test_broadcast_replaces_old_budget_with_energy_covered_budget(
+        self, sign_transaction, client_class
+    ):
+        # 回归：65,000 Energy 的调用不能再被旧 5 TRX 限制为 50,000。
+        # 新任务、主网旧任务及 Nile 旧任务均须按本次报价覆盖预算，不能留下燃烧额度。
+        for chain_code in (ChainCode.Tron, ChainCode.Nile):
+            self.chain.code = chain_code
+            self.chain.save(update_fields=["code"])
+            for initial_fee_limit in (0, 5_000_000, 300_000_000):
+                for price in (100, 420):
+                    with self.subTest(
+                        chain=chain_code, initial=initial_fee_limit, price=price
+                    ):
+                        task = self.make_task()
+                        task.fee_limit = initial_fee_limit
+                        task.save(update_fields=["fee_limit"])
+                        client = client_class.return_value
+                        client.reset_mock()
+                        client.get_energy_fee.return_value = price
+                        client.trigger_constant_contract.return_value = {
+                            "result": {"result": True},
+                            "energy_used": 65_000,
+                        }
+                        client.get_account_resource.return_value = {
+                            "EnergyLimit": 100_000,
+                            "EnergyUsed": 22_000,
+                            "freeNetLimit": 10_000,
+                        }
+                        expected_fee_limit = 78_000 * price
+                        transaction = self.unsigned_transaction(
+                            fee_limit=expected_fee_limit,
+                            raw_data_hex=f"0a08{task.pk:016x}",
+                        )
+                        client.trigger_smart_contract.return_value = {
+                            "transaction": transaction,
+                        }
+                        sign_transaction.return_value = self.signed_payload(transaction)
+                        client.broadcast_transaction.return_value = {"result": True}
+
+                        task.broadcast()
+
+                        self.assertEqual(
+                            client.trigger_smart_contract.call_args.kwargs["fee_limit"],
+                            expected_fee_limit,
+                        )
+                        self.assertEqual(expected_fee_limit // price, 78_000)
+                        client.get_account.assert_not_called()
+                        client.broadcast_transaction.assert_called_once()
+                        task.refresh_from_db()
+                        self.assertEqual(task.fee_limit, expected_fee_limit)
+                        self.assertEqual(task.base_task.status, TxTaskStatus.SUBMITTED)
+
+    @patch("tron.models.TronHttpClient")
+    @patch("chains.models.Address.sign_tron_transaction")
+    def test_broadcast_never_uses_trx_to_cover_energy_shortfall(
+        self, sign_transaction, client_class
+    ):
+        for chain_code in (ChainCode.Tron, ChainCode.Nile):
+            with self.subTest(chain=chain_code):
+                self.chain.code = chain_code
+                self.chain.save(update_fields=["code"])
+                task = self.make_task()
+                client = client_class.return_value
+                client.trigger_constant_contract.return_value = {
+                    "result": {"result": True},
+                    "energy_used": 65_000,
+                }
+                # 已有能量够估算值，但不够含安全余量的预算；余额再多也不得放行。
+                client.get_account_resource.return_value = {
+                    "EnergyLimit": 100_000,
+                    "EnergyUsed": 22_001,
+                }
+                client.get_account.return_value = {"balance": 1_000_000_000}
+
+                with self.assertRaisesMessage(
+                    TronResourceGuardError, "energy insufficient"
+                ):
+                    task.broadcast()
+
+                client.get_account.assert_not_called()
+                client.trigger_smart_contract.assert_not_called()
+                sign_transaction.assert_not_called()
+                client.broadcast_transaction.assert_not_called()
+                task.base_task.refresh_from_db()
+                self.assertEqual(task.base_task.status, TxTaskStatus.QUEUED)
+
+    @patch("tron.models.TronHttpClient")
+    @patch("chains.models.Address.sign_tron_transaction")
+    def test_broadcast_waits_without_signing_when_energy_price_is_unavailable(
+        self, sign_transaction, client_class
+    ):
+        task = self.make_task()
+        client = client_class.return_value
+        client.trigger_constant_contract.return_value = {
+            "result": {"result": True},
+            "energy_used": 1_000,
+        }
+        client.get_account_resource.return_value = {"EnergyLimit": 2_000}
+        client.get_energy_fee.side_effect = TronClientError("invalid energy fee")
+
+        with self.assertRaisesMessage(TronClientError, "invalid energy fee"):
+            task.broadcast()
+
+        sign_transaction.assert_not_called()
+        client.trigger_smart_contract.assert_not_called()
+        client.broadcast_transaction.assert_not_called()
+        task.base_task.refresh_from_db()
+        self.assertEqual(task.base_task.status, TxTaskStatus.QUEUED)
+
     @patch("tron.models.TronHttpClient")
     @patch("chains.models.Address.sign_tron_transaction")
     def test_broadcast_stops_before_sign_when_energy_is_insufficient(
@@ -848,6 +1009,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
     ):
         task = self.make_task()
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -877,6 +1039,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
     ):
         task = self.make_task()
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -909,6 +1072,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
     ):
         task = self.make_task()
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -939,6 +1103,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
     ):
         task = self.make_task()
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -968,6 +1133,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
     ):
         task = self.make_task()
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -997,6 +1163,7 @@ class TronTxTaskBroadcastResourceGuardTests(TestCase):
     ):
         task = self.make_task()
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -1330,7 +1497,7 @@ class TronTxTaskSimulationRevertTests(TestCase):
             to="TWd4WrZ9wn84f5x1hZhL4DHvk738ns5jwb",
             function_selector="collect(address)",
             parameter="00" * 32,
-            fee_limit=TRON_VAULT_SLOT_FEE_LIMIT,
+            fee_limit=5_000_000,
         )
 
     def prime_streak(self, task: TronTxTask, *, count: int, first_at) -> None:
@@ -1372,7 +1539,7 @@ class TronTxTaskSimulationRevertTests(TestCase):
                 }
             ],
             "expiration": 123,
-            "fee_limit": TRON_VAULT_SLOT_FEE_LIMIT,
+            "fee_limit": 120_000,
         }
         return {
             "raw_data_hex": raw_data_hex,
@@ -1511,6 +1678,7 @@ class TronTxTaskSimulationRevertTests(TestCase):
             first_at=timezone.now() - timedelta(hours=1),
         )
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -1542,6 +1710,7 @@ class TronTxTaskSimulationRevertTests(TestCase):
             first_at=timezone.now() - timedelta(hours=1),
         )
         client = client_class.return_value
+        client.get_energy_fee.return_value = 100
         client.trigger_constant_contract.return_value = {
             "result": {"result": True},
             "energy_used": 1_000,
@@ -2894,7 +3063,7 @@ class TronReceiptConfirmTaskTests(TestCase):
             to=self.slot.address,
             function_selector="collect(address)",
             parameter="00" * 32,
-            fee_limit=TRON_VAULT_SLOT_FEE_LIMIT,
+            fee_limit=5_000_000,
         )
         VaultSlotCollectSchedule.objects.create(
             chain=self.chain,
@@ -2920,7 +3089,7 @@ class TronReceiptConfirmTaskTests(TestCase):
             to="TJRabPrwbZy45sbavfcjinPJC18kjpRTv8",
             function_selector="deployVaultSlot(address,bytes32)",
             parameter="00" * 64,
-            fee_limit=TRON_VAULT_SLOT_FEE_LIMIT,
+            fee_limit=5_000_000,
         )
         VaultSlot.objects.filter(pk=self.slot.pk).update(deploy_tx_task=base_task)
         return base_task
@@ -3558,7 +3727,7 @@ class TronCollectScheduleExecuteTests(TestCase):
         self.assertEqual(schedule.tx_task.tron_task.to, self.slot.address)
         self.assertEqual(
             schedule.tx_task.tron_task.fee_limit,
-            TRON_VAULT_SLOT_FEE_LIMIT,
+            0,
         )
 
     @patch("tron.vault_slots.TronAdapter.is_contract", return_value=True)
