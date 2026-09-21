@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 UPGRADE_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "upgrade.sh"
+START_SCRIPT = UPGRADE_SCRIPT.parent.parent / "compose/production/django/start"
 
 FAKE_CLI = r"""
 import json
@@ -31,21 +32,31 @@ if tool == "flock":
     sys.exit(0)
 
 args = args[1:]  # docker compose
+compose_files = []
 while args and args[0] in ("--env-file", "-f", "--profile"):
+    if args[0] == "-f":
+        compose_files.append(args[1])
     args = args[2:]
 command = args[0]
 failure = os.environ.get("FAIL_POINT", "")
+
+if command == "up" and "worker" in args:
+    # 成功准备后的启动必须真正覆盖 /start，否则 Web 仍会重复迁移和初始化。
+    assert len(compose_files) == 2
+    assert 'command: ["/start", "--prepared"]' in Path(compose_files[-1]).read_text()
 
 if command == "ps":
     print(os.environ["RUNNING_SERVICES"])
 elif command == "build" and failure == "build":
     sys.exit(23)
-elif command == "stop" and args[1:] == ["django", "worker", "worker-scan"]:
-    if failure == "stop_runtime":
+elif command == "stop":
+    if failure == "stop_workers" and args[1:] == ["worker", "worker-scan"]:
+        sys.exit(23)
+    if failure == "stop_django" and args[1:] == ["django"]:
         sys.exit(23)
 elif command == "up" and "worker" in args and failure == "start_runtime":
     sys.exit(23)
-elif command == "run":
+elif command in ("run", "exec") and "manage.py" in args:
     operation = args[args.index("manage.py") + 1:]
     rehearsal = "POSTGRES_HOST=migration-rehearsal-db" in args
     if operation == ["migrate", "--plan"]:
@@ -64,8 +75,12 @@ elif command == "run":
     elif operation == ["migrate", "--noinput"]:
         if failure == ("rehearsal" if rehearsal else "production_migrate"):
             sys.exit(23)
-    elif not rehearsal and operation == ["ensure_default_reference_data"]:
-        if failure == "bootstrap":
+    elif not rehearsal and operation == ["bootstrap_runtime", "--skip-migrations"]:
+        attempts = sum(
+            '"bootstrap_runtime"' in line
+            for line in Path(os.environ["COMMAND_LOG"]).read_text().splitlines()
+        )
+        if failure == "bootstrap" or (failure == "bootstrap_once" and attempts == 1):
             sys.exit(23)
     elif operation[:1] == ["wait_for_runtime"]:
         if failure == "ready_" + operation[operation.index("--phase") + 1]:
@@ -155,7 +170,8 @@ def test_upgrade_switches_old_processes_before_starting_new_beat(
     assert result.returncode == 0, result.stdout + result.stderr
     build = command_index(commands, ["build"])
     stop_beat = commands.index(["stop", "beat"])
-    stop_runtime = commands.index(["stop", "django", "worker", "worker-scan"])
+    stop_workers = commands.index(["stop", "worker", "worker-scan"])
+    stop_django = commands.index(["stop", "django"])
     migrate = next(
         index
         for index, command in enumerate(commands)
@@ -163,12 +179,25 @@ def test_upgrade_switches_old_processes_before_starting_new_beat(
     )
     start_runtime = command_index(commands, ["up"], contains="worker")
     start_beat = commands.index(["up", "-d", "--no-deps", "beat"])
-    consumers_ready = command_index(commands, ["run"], contains="consumers")
-    scheduler_ready = command_index(commands, ["run"], contains="scheduler")
-    assert build < stop_beat < stop_runtime < migrate < start_runtime < start_beat
+    consumers_ready = command_index(commands, ["exec"], contains="consumers")
+    scheduler_ready = command_index(commands, ["exec"], contains="scheduler")
+    bootstrap = command_index(commands, ["run"], contains="bootstrap_runtime")
+    assert (
+        build
+        < stop_beat
+        < stop_workers
+        < stop_django
+        < migrate
+        < bootstrap
+        < start_runtime
+        < start_beat
+    )
     assert start_runtime < consumers_ready < start_beat < scheduler_ready
     assert commands.count(["stop", "beat"]) == 1
-    assert commands.count(["stop", "django", "worker", "worker-scan"]) == 1
+    assert commands.count(["stop", "worker", "worker-scan"]) == 1
+    assert commands.count(["stop", "django"]) == 1
+    assert sum("bootstrap_runtime" in c for c in commands) == 1
+    assert not any(c[0] == "run" and "wait_for_runtime" in c for c in commands)
     rehearsal = [c for c in commands if "POSTGRES_HOST=migration-rehearsal-db" in c]
     assert bool(rehearsal) is migrations
     if migrations:
@@ -207,7 +236,7 @@ def test_invalid_readiness_timeout_aborts_before_touching_services(run_upgrade, 
     assert commands == []
 
 
-@pytest.mark.parametrize("failure", ["production_plan", "stop_runtime"])
+@pytest.mark.parametrize("failure", ["production_plan", "stop_workers", "stop_django"])
 def test_pre_migration_failure_restores_only_previously_running_containers(
     run_upgrade, failure
 ):
@@ -229,12 +258,14 @@ def test_failed_production_migration_does_not_restart_apps(run_upgrade):
     assert ["up", "-d", "--no-deps", "beat"] not in commands
 
 
-def test_post_migration_recovery_starts_new_workers_before_beat(run_upgrade):
-    result, commands = run_upgrade(failure="bootstrap")
+def test_post_migration_recovery_retries_setup_before_starting_services(run_upgrade):
+    result, commands = run_upgrade(failure="bootstrap_once")
     assert result.returncode != 0
     runtime = command_index(commands, ["up"], contains="worker")
     beat = commands.index(["up", "-d", "--no-deps", "beat"])
-    assert runtime < beat
+    bootstrap = [i for i, c in enumerate(commands) if "bootstrap_runtime" in c]
+    assert len(bootstrap) == 2
+    assert bootstrap[-1] < runtime < beat
     assert not any(c[0] == "start" for c in commands)
 
 
@@ -242,6 +273,21 @@ def test_worker_start_failure_cannot_start_beat_even_during_cleanup(run_upgrade)
     result, commands = run_upgrade(failure="start_runtime")
     assert result.returncode != 0
     assert ["up", "-d", "--no-deps", "beat"] not in commands
+
+
+def test_persistent_setup_failure_cannot_start_unprepared_services(run_upgrade):
+    result, commands = run_upgrade(failure="bootstrap")
+    assert result.returncode != 0
+    assert sum("bootstrap_runtime" in c for c in commands) == 2
+    assert not any(c[0] == "up" and "worker" in c for c in commands)
+    assert ["up", "-d", "--no-deps", "beat"] not in commands
+
+
+def test_worker_stop_failure_does_not_take_http_down(run_upgrade):
+    result, commands = run_upgrade(failure="stop_workers")
+    assert result.returncode != 0
+    assert ["stop", "django"] not in commands
+    assert not any(c[-2:] == ["migrate", "--noinput"] for c in commands)
 
 
 def test_consumer_readiness_failure_never_starts_beat(run_upgrade):
@@ -258,3 +304,48 @@ def test_scheduler_readiness_failure_stops_beat_without_cleanup_restart(run_upgr
     assert ["stop", "beat"] in commands[start + 1 :]
     assert commands.count(["up", "-d", "--no-deps", "beat"]) == 1
     assert "upgrade completed" not in result.stdout
+
+
+@pytest.mark.parametrize(
+    ("prepared", "fail_bootstrap"), [(False, False), (True, False), (False, True)]
+)
+def test_web_start_requires_bootstrap_unless_upgrade_prepared_it(
+    tmp_path, prepared, fail_bootstrap
+):
+    """执行真实 /start，验证首次部署会初始化，失败不会开放 HTTP。"""
+    command_log = tmp_path / "commands.jsonl"
+    fake = r"""
+import json
+import os
+import sys
+from pathlib import Path
+
+tool = Path(sys.argv[0]).name
+with Path(os.environ["COMMAND_LOG"]).open("a") as output:
+    output.write(json.dumps([tool, *sys.argv[1:]]) + "\n")
+if "shell-env" in sys.argv:
+    print("GUNICORN_WORKERS=1; GUNICORN_THREADS=1")
+if "bootstrap_runtime" in sys.argv and os.environ["FAIL_BOOTSTRAP"] == "true":
+    sys.exit(23)
+"""
+    for name in ("python", "gunicorn"):
+        executable = tmp_path / name
+        executable.write_text(f"#!{sys.executable}\n{fake}")
+        executable.chmod(0o755)
+    result = subprocess.run(
+        ["/bin/bash", str(START_SCRIPT), *(["--prepared"] if prepared else [])],
+        env={
+            **os.environ,
+            "PATH": f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
+            "COMMAND_LOG": str(command_log),
+            "FAIL_BOOTSTRAP": str(fail_bootstrap).lower(),
+        },
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=15,
+    )
+    commands = [json.loads(line) for line in command_log.read_text().splitlines()]
+    assert any("bootstrap_runtime" in c for c in commands) is not prepared
+    assert any(c[0] == "gunicorn" for c in commands) is not fail_bootstrap
+    assert (result.returncode == 0) is not fail_bootstrap

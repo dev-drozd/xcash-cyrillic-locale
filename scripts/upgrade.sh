@@ -31,15 +31,18 @@ APP_READY_TIMEOUT="${APP_READY_TIMEOUT:-360}"
 LOCK_ACQUIRED=false
 # 切换版本前必须全部停掉的业务服务。任何会读写业务库的常驻服务都要列在这里——
 # 漏掉一个，它就会在 migrate 执行期间继续按旧代码读写处于中间态的 schema。
-# 收敛成单一定义，避免 stop / ps 两处各写一份而在新增服务时漏改。
-APP_RUNTIME_SERVICES=(django worker worker-scan)
+# worker 单独分组，确保排空时保留 HTTP；迁移前仍停止所有业务服务。
+APP_WORKER_SERVICES=(worker worker-scan)
+APP_RUNTIME_SERVICES=(django "${APP_WORKER_SERVICES[@]}")
 APP_SERVICES=("${APP_RUNTIME_SERVICES[@]}" beat)
 APP_SERVICES_STOP_REQUESTED=false
 APP_SERVICES_TO_RESTORE=()
 REHEARSAL_IN_PROGRESS=false
 PRODUCTION_MIGRATE_STARTED=false
 PRODUCTION_MIGRATE_COMPLETED=false
+PRODUCTION_SETUP_COMPLETED=false
 APPLICATION_START_ATTEMPTED=false
+HTTP_STOPPED_AT=""
 # 演练 dump 文件路径，dump 时赋值；cleanup 在 nounset 下引用，故先声明为空。
 MAIN_DUMP=""
 RUN_MIGRATION_REHEARSAL=true
@@ -49,7 +52,18 @@ REHEARSAL_COMPOSE=(docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" 
 TMP_DIR=""
 
 log() {
-  printf '[upgrade] %s\n' "$*"
+  printf '[upgrade %s +%ss] %s\n' "$(date '+%H:%M:%S')" "${SECONDS}" "$*"
+}
+
+run_stage() {
+  local description="$1"
+  shift
+  local started=${SECONDS}
+  local result=0
+  log "${description}"
+  "$@" || result=$?
+  log "${description}: finished in $((SECONDS - started))s (exit ${result})"
+  return "${result}"
 }
 
 die() {
@@ -91,9 +105,9 @@ cleanup() {
     elif [[ "${APPLICATION_START_ATTEMPTED}" == "true" ]]; then
       printf '\n[upgrade] application startup/readiness failed; inspect running services before retrying.\n' >&2
     elif [[ "${PRODUCTION_MIGRATE_COMPLETED}" == "true" ]]; then
-      printf '\n[upgrade] failure after production migrations completed; starting services on migrated schema\n' >&2
+      printf '\n[upgrade] failure after production migrations completed; retrying setup before starting services\n' >&2
       run_cleanup_command "start services on migrated schema" \
-        start_application_services
+        recover_application_services
     elif [[ "${REHEARSAL_IN_PROGRESS}" == "true" ]]; then
       print_rehearsal_failure_help
       if [[ "${APP_SERVICES_STOP_REQUESTED}" == "true" ]]; then
@@ -211,7 +225,7 @@ run_main_manage() {
     -e XCASH_IGNORE_DATABASE_URL=true \
     -e POSTGRES_HOST="${postgres_host}" \
     -e POSTGRES_PORT=5432 \
-    django python manage.py "$@"
+    django python -u manage.py "$@"
 }
 
 stop_app_services() {
@@ -230,19 +244,47 @@ stop_app_services() {
 
   APP_SERVICES_STOP_REQUESTED=true
   # 先停调度源，再停消费者，避免 worker 退出时旧 Beat 继续向旧队列投递。
-  "${COMPOSE[@]}" stop beat
-  "${COMPOSE[@]}" stop "${APP_RUNTIME_SERVICES[@]}"
+  run_stage "stop Beat" "${COMPOSE[@]}" stop beat || return 1
+  # 此时 schema 尚未改变，旧 HTTP 可继续处理请求；新投递的异步任务留在 broker，
+  # 待旧消费者全部退出后由新版消费。生产迁移仍须等 Django 也停止，不能交错版本。
+  run_stage "drain workers; HTTP remains available" \
+    "${COMPOSE[@]}" stop "${APP_WORKER_SERVICES[@]}" || return 1
+  HTTP_STOPPED_AT="$(date +%s)"
+  run_stage "stop Django; HTTP downtime begins" "${COMPOSE[@]}" stop django
+}
+
+prepare_application() {
+  run_stage "initialize production runtime" \
+    run_main_manage db bootstrap_runtime --skip-migrations || return 1
+  PRODUCTION_SETUP_COMPLETED=true
+}
+
+recover_application_services() {
+  # 初始化失败时绝不能使用 --prepared 启动，也不能让 worker 抢先读未补齐的主数据。
+  prepare_application || return 1
+  start_application_services
 }
 
 start_application_services() {
+  [[ "${PRODUCTION_SETUP_COMPLETED}" == "true" ]] || return 1
   APPLICATION_START_ATTEMPTED=true
+  local prepared_override="${TMP_DIR}/prepared.yml"
+  local readiness_args=()
+  if [[ -n "${HTTP_STOPPED_AT}" ]]; then
+    readiness_args=(--http-stopped-at "${HTTP_STOPPED_AT}")
+  fi
+  # override 只供本次启动使用，不写 .env，不改变普通首次部署的初始化入口。
+  printf 'services:\n  django:\n    command: ["/start", "--prepared"]\n' >"${prepared_override}" || return 1
   # cleanup 的条件调用会抑制 errexit，每个门控必须显式传播失败。
-  "${COMPOSE[@]}" up -d --remove-orphans "${APP_RUNTIME_SERVICES[@]}" caddy \
+  run_stage "start prepared application services" \
+    "${COMPOSE[@]}" -f "${prepared_override}" up -d --remove-orphans "${APP_RUNTIME_SERVICES[@]}" caddy \
     || return 1
-  run_main_manage db wait_for_runtime --phase consumers --timeout "${APP_READY_TIMEOUT}" \
+  "${COMPOSE[@]}" exec -T django python -u manage.py wait_for_runtime \
+    --phase consumers --timeout "${APP_READY_TIMEOUT}" "${readiness_args[@]}" \
     || return 1
-  "${COMPOSE[@]}" up -d --no-deps beat || return 1
-  if ! run_main_manage db wait_for_runtime --phase scheduler --timeout "${APP_READY_TIMEOUT}"; then
+  run_stage "start Beat" "${COMPOSE[@]}" up -d --no-deps beat || return 1
+  if ! "${COMPOSE[@]}" exec -T django python -u manage.py wait_for_runtime \
+    --phase scheduler --timeout "${APP_READY_TIMEOUT}"; then
     # 消费回执不完整时暂停投递源，保留应用进程供排查；不能打印升级成功。
     "${COMPOSE[@]}" stop beat || true
     return 1
@@ -338,8 +380,7 @@ mkdir -p "${BACKUP_DIR}"
 BACKUP_DIR="$(cd "${BACKUP_DIR}" && pwd)"
 MAIN_DUMP="${BACKUP_DIR}/xcash-pre-upgrade-$(date +%Y%m%d-%H%M%S).dump"
 
-log "build production images"
-"${COMPOSE[@]}" build
+run_stage "build production images" "${COMPOSE[@]}" build
 
 log "ensure database and cache dependencies are running"
 # --no-recreate：在演练 dump 落盘之前，绝不因 compose 配置/镜像变更重建生产 DB
@@ -414,14 +455,11 @@ fi
 # cleanup 才会按新 schema 尝试拉起服务。
 PRODUCTION_MIGRATE_STARTED=true
 
-log "apply production migrations"
-run_main_manage db migrate --noinput 2>&1 \
+run_stage "apply production migrations" run_main_manage db migrate --noinput 2>&1 \
   | tee "${TMP_DIR}/main-production-migrate.log"
 PRODUCTION_MIGRATE_COMPLETED=true
 
-log "run production post-migration setup"
-run_main_manage db ensure_default_reference_data
-run_main_manage db ensure_default_superuser
+prepare_application
 
 log "start application services"
 start_application_services

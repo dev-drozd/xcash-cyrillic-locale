@@ -132,6 +132,7 @@ services:
   django:
     <<: *django-base
     container_name: xcash_django
+    # 普通部署自动迁移并初始化；upgrade.sh 准备成功后用临时 override 跳过重复初始化。
     command: /start
 
   # 业务 worker：只消费 celery 队列。与 worker-scan 分开是为了做执行容量隔离——
@@ -145,6 +146,7 @@ services:
       # 显式覆盖 env_file 可能遗留的 SIGQUIT：正常停机必须让在途任务完成。
       REMAP_SIGTERM: ""
     # 当前生产最长任务硬超时 290s；预留退出和未确认消息恢复时间。
+    # upgrade.sh 在 worker 排空期间保留 Django，排空结束后才进入 HTTP 停机窗口。
     stop_grace_period: 330s
     command: /start-worker
 

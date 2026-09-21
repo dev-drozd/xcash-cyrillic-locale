@@ -59,19 +59,39 @@ class Command(BaseCommand):
         )
         parser.add_argument("--timeout", type=int, default=360)
         parser.add_argument("--url", default="http://xcash-caddy/health")
+        parser.add_argument("--http-stopped-at", type=float)
 
     def handle(self, *args, **options):
         timeout = options["timeout"]
         if timeout <= 0:
             raise CommandError("timeout must be positive")
         published_after = time.time()
-        deadline = time.monotonic() + timeout
+        started = time.monotonic()
+        deadline = started + timeout
         last_error = "runtime has not responded"
+        reported_error = None
+        reported_at = started
+        http_reported = False
+        self.stdout.write(
+            f"waiting for runtime {options['phase']} (timeout {timeout}s)"
+        )
+        self.stdout.flush()
         # 内网请求不得继承宿主代理；不跟随重定向，避免入口路由错误被最终 200 掩盖。
         with httpx.Client(trust_env=False, follow_redirects=False) as client:
             while (remaining := deadline - time.monotonic()) > 0:
                 try:
                     check_http_health(client, options["url"], min(5, remaining))
+                    if options["phase"] == "consumers" and not http_reported:
+                        message = "HTTP ready through Caddy"
+                        if options["http_stopped_at"] is not None:
+                            elapsed = max(0, time.time() - options["http_stopped_at"])
+                            # 从请求停止到首次成功采样，包含关闭和轮询开销，不是精确故障时长。
+                            message += (
+                                f"; {elapsed:.1f}s since Django stop was requested"
+                            )
+                        self.stdout.write(message)
+                        self.stdout.flush()
+                        http_reported = True
                     if options["phase"] == "consumers":
                         missing = missing_consumer_groups(min(2, remaining))
                     else:
@@ -79,12 +99,21 @@ class Command(BaseCommand):
                         # 也不能让一个尚未恢复调度的 Beat 获得成功判定。
                         missing = stale_worker_groups(published_after=published_after)
                     if not missing:
-                        self.stdout.write(f"runtime {options['phase']} ready")
+                        self.stdout.write(
+                            f"runtime {options['phase']} ready in {time.monotonic() - started:.1f}s"
+                        )
+                        self.stdout.flush()
                         return
                     last_error = f"waiting for {options['phase']}: {', '.join(missing)}"
                 except Exception as exc:
                     # 只输出异常类型；连接 URL 可能含凭据，不能把原始异常带进发布日志。
                     last_error = f"runtime probe failed: {type(exc).__name__}"
+                now = time.monotonic()
+                # 状态变化立即输出；同一状态最多每十秒输出一次，不泄漏异常中的连接凭据。
+                if last_error != reported_error or now - reported_at >= 10:
+                    self.stdout.write(f"{last_error} (elapsed {now - started:.1f}s)")
+                    self.stdout.flush()
+                    reported_error, reported_at = last_error, now
                 remaining = deadline - time.monotonic()
                 if remaining > 0:
                     time.sleep(min(2, remaining))

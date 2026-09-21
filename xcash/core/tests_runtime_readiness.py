@@ -64,9 +64,36 @@ def test_readiness_failure_times_out_instead_of_reporting_success(runtime, failu
         consumers.return_value = ["scan"]
     else:
         scheduled.return_value = ["celery"]
+    output = StringIO()
     with pytest.raises(CommandError, match="timed out") as error:
-        run("scheduler" if failure == "scheduler" else "consumers")
+        call_command(
+            "wait_for_runtime",
+            phase="scheduler" if failure == "scheduler" else "consumers",
+            timeout=3,
+            stdout=output,
+        )
     assert "password" not in str(error.value)
+    assert "password" not in output.getvalue()
+    assert "runtime consumers ready" not in output.getvalue()
+    assert "runtime scheduler ready" not in output.getvalue()
+
+
+def test_http_recovery_is_reported_even_while_consumers_are_missing(runtime):
+    _, consumers, _ = runtime
+    consumers.return_value = ["scan"]
+    output = StringIO()
+    with pytest.raises(CommandError, match="timed out"):
+        call_command(
+            "wait_for_runtime",
+            phase="consumers",
+            timeout=3,
+            http_stopped_at=1200,
+            stdout=output,
+        )
+    assert "HTTP ready through Caddy" in output.getvalue()
+    assert "34.0s since Django stop was requested" in output.getvalue()
+    assert "waiting for consumers: scan" in output.getvalue()
+    assert "runtime consumers ready" not in output.getvalue()
 
 
 def test_scheduler_requires_new_publications_and_recovers(runtime):

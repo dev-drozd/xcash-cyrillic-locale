@@ -422,7 +422,9 @@ git pull
 
 The script deploys the current working tree without pulling code or switching branches, and requires a clean working tree by default.
 It checks the database for pending migrations to decide whether a rehearsal is needed.
-After building and any required rehearsal, it stops the old Beat, Django, and both workers.
+After building and any required rehearsal, it stops Beat, lets both workers finish in-flight tasks,
+and stops Django last. HTTP remains available while workers drain; asynchronous tasks stay queued
+until the new workers resume. All old application processes stop before production migrations begin.
 Once production migrations and initialization finish, it starts Django, the workers, and Caddy.
 It checks `/health` through Caddy and verifies both workers' main and periodic queue subscriptions before starting Beat.
 Success then requires fresh heartbeat messages published after the final check starts and executed by both worker pools.
@@ -431,6 +433,19 @@ Each readiness phase has a 360-second timeout, configurable with `APP_READY_TIME
 A failed check exits nonzero. Beat stays stopped if the first check fails and is stopped if the final scheduling check fails;
 application processes remain available for diagnosis. These checks cover the local HTTP and task pipeline;
 external monitoring must still cover public TLS and chain RPC health.
+
+The script runs production migrations separately, then initializes reference data and the administrator
+in one Django process. Only after initialization succeeds does a temporary Compose override start Django
+with `/start --prepared`, avoiding duplicate initialization. Ordinary `docker compose up -d` still uses
+`/start` to initialize a fresh deployment without changes to `.env`.
+Failed initialization is retried once; a second failure leaves application services stopped.
+Failed production migrations never trigger automatic service recovery.
+Readiness checks execute inside the Django container instead of creating extra containers.
+Logs include total elapsed time and major stage durations. The first successful HTTP probe reports time
+since Django stop was requested, including shutdown and probe overhead rather than exact outage duration.
+Readiness progress is printed when the state changes and every ten seconds while unchanged.
+After HTTP recovers, full readiness may still wait for the next 30-second Beat heartbeat cycle and its
+execution receipts; that remaining wait is separate from HTTP downtime.
 
 Normal worker shutdown uses Celery warm shutdown: idle workers exit immediately, while running tasks finish.
 The 330-second container grace period covers the current longest production task's 290-second hard limit plus cleanup.
