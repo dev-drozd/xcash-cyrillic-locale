@@ -19,6 +19,7 @@ from django.core.management import call_command
 from django.test import SimpleTestCase
 from django.test import TestCase
 from django.test import override_settings
+from django.urls import reverse
 from tron.models import TronTxTask
 from web3 import Web3
 
@@ -51,6 +52,7 @@ from evm.scanner.constants import ERC20_TRANSFER_TOPIC0
 from invoices.models import Invoice
 from invoices.models import InvoiceStatus
 from projects.models import Project
+from users.models import User
 
 
 def setUpModule():
@@ -224,7 +226,7 @@ class OperationalRiskResourceTests(TestCase):
         self.assertEqual(alerts[0]["required_balance"], 2_000)
         self.assertEqual(alerts[0]["sender"], sender)
 
-    def test_tron_low_resource_alerts_when_energy_is_below_pending_queue(self):
+    def make_pending_tron_collect_task(self):
         chain = make_tron_chain()
         wallet = Wallet.objects.create()
         sender = Address.objects.create(
@@ -241,7 +243,7 @@ class OperationalRiskResourceTests(TestCase):
             tx_type=TxTaskType.VaultSlotCollect,
             status=TxTaskStatus.QUEUED,
         )
-        TronTxTask.objects.create(
+        return TronTxTask.objects.create(
             base_task=base_task,
             sender=sender,
             chain=chain,
@@ -251,6 +253,8 @@ class OperationalRiskResourceTests(TestCase):
             fee_limit=150_000_000,
         )
 
+    def test_tron_low_resource_alerts_when_energy_is_below_pending_queue(self):
+        task = self.make_pending_tron_collect_task()
         with (
             patch("tron.client.TronHttpClient") as client_class,
             patch("tron.resources.estimate_contract_call_energy", return_value=100),
@@ -268,7 +272,45 @@ class OperationalRiskResourceTests(TestCase):
         self.assertEqual(len(alerts), 1)
         self.assertEqual(alerts[0]["available_energy"], 5)
         self.assertEqual(alerts[0]["required_energy"], 120)
-        self.assertEqual(alerts[0]["sender"], sender)
+        self.assertEqual(alerts[0]["sender"], task.sender)
+
+    def test_inspection_page_checks_pending_tron_and_nile_tasks(self):
+        # 回归真实页面调用链：排队任务出现后，资源巡检必须正常执行并渲染，
+        # 不能依赖广播模型已经移除的测试网跳过开关，也不能漏掉 Nile 的能量风险。
+        task = self.make_pending_tron_collect_task()
+        self.client.force_login(User.objects.create_superuser(username="inspector"))
+        with (
+            patch("tron.client.TronHttpClient") as client_class,
+            patch("tron.resources.estimate_contract_call_energy", return_value=100),
+            patch(
+                "core.dashboard.worker_health_status",
+                return_value={"status": "ok", "groups": [], "risk_count": 0},
+            ),
+        ):
+            client_class.return_value.get_account_resource.return_value = {
+                "EnergyLimit": 100,
+                "EnergyUsed": 95,
+                "freeNetLimit": 10_000,
+            }
+            for chain_code in (ChainCode.Tron, ChainCode.Nile):
+                with self.subTest(chain=chain_code):
+                    task.chain.code = chain_code
+                    task.chain.save(update_fields=["code"])
+
+                    response = self.client.get(reverse("operational-inspection"))
+
+                    self.assertEqual(response.status_code, 200)
+                    self.assertTemplateUsed(
+                        response, "admin/operational_inspection.html"
+                    )
+                    self.assertEqual(
+                        OperationalRiskService.cached_resource_risk_counts()[
+                            "tron_low_resource_count"
+                        ],
+                        1,
+                    )
+                    task.base_task.refresh_from_db()
+                    self.assertEqual(task.base_task.status, TxTaskStatus.QUEUED)
 
 
 class OperationalInspectionSidebarBadgeTests(TestCase):

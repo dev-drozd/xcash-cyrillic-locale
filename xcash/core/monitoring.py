@@ -248,8 +248,6 @@ class OperationalRiskService:
             .order_by("chain_id", "sender_id", "created_at")
         )
         for task in tasks:
-            if task.should_skip_resource_preflight:
-                continue
             grouped[(task.chain_id, task.sender_id)].append(task)
 
         alerts = []
