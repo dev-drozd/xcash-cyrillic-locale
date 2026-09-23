@@ -1,4 +1,8 @@
-"""Redis 队列原子合并：保留已有 tick，空队列才写入；无锁、无租约、无额外 key。"""
+"""Redis 队列原子合并：保留已有 tick，空队列才写入；无锁、无租约、无额外 key。
+
+本模块覆写了 Kombu Redis transport 的内部方法，升级 Kombu 时必须运行
+common/tests/test_redis_transport.py，验证发布、优先级、前缀及恢复路径的兼容性。
+"""
 
 import json
 

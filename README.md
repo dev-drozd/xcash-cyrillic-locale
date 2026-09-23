@@ -403,133 +403,38 @@ docker compose up -d
 
 ## 运维命令
 
-查看各服务运行状态：
+查看服务状态：
 
 ```bash
 docker compose ps
 ```
 
-> 只有 `db` 与 `redis` 配了容器健康检查，因为它们被 `depends_on: service_healthy` 用作启动门控。
-> 应用服务（django / worker / worker-scan / caddy）**有意不配**——Docker Compose 不会因 unhealthy
-> 做任何事（自动重启是 Swarm 的能力），状态仅供 `ps` 展示，却要为此付出常驻开销。应用存活请用
-> 下面的 HTTP 探针从容器外部监控。
-
-停止服务（移除服务容器，保留数据库数据卷）：
+停止服务（移除容器，保留数据库数据卷）：
 
 ```bash
 docker compose down
 ```
 
-升级到最新版（确认当前位于 `main` 分支，手动拉取代码后执行生产升级）：
+升级到最新版（确认位于 `main` 分支）：
 
 ```bash
 git pull
 ./scripts/upgrade.sh
 ```
 
-脚本只部署当前工作区，不执行 Git 拉取或分支切换；默认要求工作区干净。
-脚本根据数据库实际待执行的迁移决定是否演练，在构建及必要的演练完成后，
-自动停止旧 Beat，等待两组 worker 完成在途任务后，最后停止 Django；等待 worker 期间
-HTTP 继续服务，异步任务暂存队列，待新版 worker 恢复后处理。生产迁移开始前，旧业务进程全部停止。
-完成生产迁移及初始化后，先启动新版 Django、worker 和 Caddy，确认经 Caddy 的 `/health`
-返回正常、两组 worker 已订阅各自主队列与周期队列，再启动 Beat。随后必须收到检查开始后
-新发布、且由两组 worker 实际执行的心跳回执，脚本才报告升级成功。
-没有待执行迁移时也执行这个切换顺序，使用者无需额外手动停止服务。
-每阶段就绪等待默认最多 360 秒，可通过 `APP_READY_TIMEOUT` 设置。就绪失败返回非零状态；
-启动 Beat 前的检查失败不会启动 Beat，启动后的调度检查失败会停止 Beat，保留应用进程供排查。
-这些检查验证本机 HTTP、调度和消费链路；公网 TLS 与真实链 RPC 状态仍由外部监控覆盖。
+脚本会自动完成镜像构建、按需的迁移演练、旧服务平滑停止、生产迁移与新版启动，全部就绪检查通过才报告成功；失败时返回非零状态并保留现场供排查。脚本要求工作区干净，就绪等待默认最多 360 秒，可通过 `APP_READY_TIMEOUT` 调整。
 
-生产迁移、基础数据与管理员初始化在同一个临时容器、同一个 Django 进程中按序执行。
-即使没有待执行迁移，仍执行 migrate，保留 post_migrate 中的数据库触发器维护。
-初始化错误使用专用退出码，确保脚本区分迁移失败与迁移完成后的初始化失败；
-进程中断等无法确认迁移完成的情况，不自动恢复服务。
-初始化成功后，脚本用临时 Compose override 以 `/start --prepared` 启动 Django，避免重复初始化；
-普通 `docker compose up -d` 仍使用 `/start` 自动完成首次部署初始化，无需修改 `.env`。
-初始化失败会重试一次，仍失败则保持业务服务停止；生产迁移失败不自动恢复服务。
-就绪检查在 Django 容器内执行，不再额外创建临时容器。日志包含升级累计耗时、主要阶段耗时，
-并在 HTTP 首次探测成功时报告自请求停止 Django 起的时间（包含关闭及探测开销，并非精确故障时长）。
-就绪等待状态变化时立即输出，状态不变时每十秒输出一次。HTTP 恢复后可能仍需等待下一轮
-30 秒周期的 Beat 心跳及任务执行回执，这段时间属于完整就绪检查，不等于 HTTP 停机。
+### 外部监控
 
-正常停机使用 Celery warm shutdown：空闲 worker 立即退出，在途任务等待完成。
-容器停止宽限为 330 秒，覆盖当前最长生产任务的 290 秒硬超时并预留清理时间；
-这是等待上限，不是每次升级固定等待。新增更长的任务时，需要一起调整停止预算和监控窗口。
+后台「异常巡检」页在打开时实时检查扫描与 worker 状态。若希望无人打开后台时也能收到告警，建议生产环境在 uptime 监控中拉取以下免鉴权端点，非 200 或超时即告警：
 
-Django、两组 worker 和 Beat 共用本地 `xcash-app:local` 镜像（自定义 Compose 项目名时使用对应前缀），
-仅 Django 声明应用镜像构建，Caddy 仍单独构建。完整 `docker compose up -d` 可在首次部署时构建所需镜像；
-单独启动 worker 前需先执行 `docker compose build django`。升级脚本会自动构建应用和 Caddy。
-Python 依赖与源码独立分层：只改源码时复用依赖安装和 `.venv` 复制层，减少镜像导出和解包开销。
+| 端点 | 检查内容 |
+| --- | --- |
+| `GET /health` | 服务可用，Postgres 可查询、Redis 可读写 |
+| `GET /health/scanning` | 各活跃链扫描正常推进、没有持续报错 |
+| `GET /health/workers` | 两组 worker 的调度与执行心跳新鲜 |
 
-本地构建会递归排除 `.env*`、备份和本地主网部署目录；运行密钥仅通过 `env_file` 注入。
-自定义环境文件若采用其他文件名，应放在构建上下文之外，或显式加入 `.dockerignore`。
-
-两组 Celery worker 当前各运行一个容器，固定容器名为 `xcash_worker` 和
-`xcash_worker_scan`，通过 `PERFORMANCE` 档位调整并发。
-将来需要 `--scale` 横向扩容时，先移除对应 worker 服务的 `container_name`；Beat 必须保持单实例。
-
-### Celery worker 分工
-
-任务分两个消费组、由两个服务分别消费，**互不抢占执行容量**：
-
-| 服务 | 队列 | 职责 |
-| --- | --- | --- |
-| `worker` | `celery` 及该组的周期专属队列 | 交易广播、确认、入账、Webhook 投递等业务任务 |
-| `worker-scan` | `scan` 及该组的周期专属队列 | 各链充值扫描（受链 RPC 延迟支配，单任务硬超时 50s） |
-
-两者共用同一镜像与 `PERFORMANCE` 档位并发值——档位描述的是**单个 worker 容器**的并发。
-扫描任务与业务任务同池时，链 RPC 持续劣化会把广播、
-确认、Webhook 一起饿死，这是必须隔离的原因。
-
-周期入口的队列合并由 `common.redis_transport.Transport` 完成：每个入口使用
-`periodic.<完整任务名>` 专属队列，在同一段 Redis Lua 内检查全部优先级分桶，已有
-消息就保留，队列为空才写入。正常发布与 unacked 重投共用此规则；worker 停机多久，
-每种入口的待消费消息都最多一条。没有额外标记、TTL 或租约，也不依赖 worker 清理。
-已经取走的消息属于 worker 的预取/执行容量，执行互斥继续使用 `singleton_task`。
-
-目前覆盖 `config/periodic_tasks.py` 登记的无参数入口：EVM/TRON 广播调度、
-EVM/TRON 活跃链扫描调度、EVM 活跃链交易轮询调度，以及两组 worker 的消费心跳。带参数子任务、独立业务消息和其余
-Beat 入口保留原行为。周期入口使用普通 `@shared_task(ignore_result=True)`，必须在执行时
-查询当前状态；参数、ETA/countdown、过期时间或 Canvas 在 transport 发布边界被拒绝。
-`apply_async()` / `delay()` 保留 Celery 标准返回值，但返回的 AsyncResult ID 只标识本次
-发布请求，不能据此认定它已独立入队或等待独立执行结果，因为该请求可能已被合并。
-发布异常仍抛出，下一次 Beat tick 可以重新尝试。
-
-现有 `-Q celery`、`-Q scan` 启动参数无需修改：worker 在 `celeryd_after_setup` 时
-自动订阅对应组的专属队列。手动 `git pull` 后统一通过 `./scripts/upgrade.sh` 升级，脚本负责先停止旧
-Beat 和 worker，再依次启动新版 worker、Beat，避免切换期间混用新旧投递逻辑。旧队列中的
-积压仍由原消费组处理，本次改动不会清空业务队列。旧版缓存 hash `xcash:celery:pending-once:v1`
-不再读取；全部进程升级后可删除该单独 key，无需清空 Redis。以后升级 Kombu 时需运行
-`xcash/common/tests/test_redis_transport.py`，验证发布、优先级、前缀及恢复路径的兼容性。
-
-### 存活监控（必须接入）
-
-后台的“异常巡检”页、首页待关注事项与侧边栏提示已接入同一套消费心跳判定，打开页面时实时检查。
-后台页面供人工查看；**无人打开后台时的持续检测与主动通知，需要独立的外部监控服务**。
-容器内不做应用健康检查。请在 uptime 监控里配置以下三个
-端点，非 200 或请求超时即告警。端点均无需鉴权，响应体只含 `status` 字段，失败细节仅写入结构化日志。
-
-| 端点 | 200 | 503 |
-| --- | --- | --- |
-| `GET /health` | 进程可服务请求，且 Postgres 可查询、Redis 可读写 | 至少一个硬依赖不可用 |
-| `GET /health/scanning` | 所有活跃链的扫描都在正常周期内推进，且没有链处于失败状态 | 至少一条链**调度停滞**（`last_scanned_at` 超过 `SCAN_STALL_ALERT_AFTER_SECONDS`，默认 300 秒未推进）或**持续失败**（扫描游标的 `last_error_at` 非空） |
-| `GET /health/workers` | 两组 worker 均有新鲜的调度与执行心跳 | 任一组心跳缺失、发布或执行超过 360 秒、或缓存不可用 |
-
-`/health` 的 Redis 探测是**写入后立即读回**，因此能识别"连得上但写不进"——典型如 maxmemory
-打满且无可淘汰键，此时 `redis-cli ping` 仍然正常。
-
-`/health/scanning` 由 django 进程回答，与被监控的 Celery worker 属于不同故障域：worker 死亡、
-beat 停摆、队列积压、broker 不可写都会命中「调度停滞」，RPC 凭据失效或节点持续报错则命中
-「持续失败」。它有意不参与任何容器的 healthcheck——扫描停摆时 django 本身是健康的，混入会
-导致误杀。
-
-「持续失败」判据对单次 RPC 抖动敏感（一轮失败即成立，下一轮成功自动恢复）。**请在监控侧配置
-「连续 N 次失败才告警」**——探针只如实反映当前状态，不做去抖。
-
-`/health/workers` 补齐业务 worker 单独停摆的覆盖：Beat 每 30 秒向两组各发布一个无参数心跳，
-复用周期队列合并机制，每种心跳最多留一条待消费消息。心跳在进程池内实际执行后写缓存，
-HTTP 只读缓存，不运行 `inspect`，也不因探测请求新增任务。发布时刻与执行时刻都须新鲜，
-避免消费旧积压掩盖 Beat 停摆。首次启动在两组心跳执行前会返回 503；即使没有活跃链也会检查。
-该探针验证调度和消费容量，不代替扫描事实、交易终态与 Webhook 送达结果的监控。
+`/health/scanning` 对单次 RPC 抖动敏感，建议在监控侧配置「连续多次失败才告警」。首次启动时，worker 心跳执行前 `/health/workers` 返回 503 属正常现象。
 
 ## 技术栈
 

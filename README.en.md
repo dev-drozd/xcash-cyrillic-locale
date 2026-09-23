@@ -388,7 +388,7 @@ Recommendations:
 
 ```bash
 # 1. Stop application services, keep the database running
-docker compose stop django worker beat
+docker compose stop django worker worker-scan beat
 
 # 2. Put .env back in place (it must be the copy matching this dump)
 
@@ -401,7 +401,7 @@ docker compose up -d
 
 ## Operations
 
-Show service status and health (`healthy` / `unhealthy` come from the built-in health checks):
+Show service status:
 
 ```bash
 docker compose ps
@@ -413,83 +413,26 @@ Stop the services (containers are removed, database volumes are kept):
 docker compose down
 ```
 
-Upgrade to the latest version (make sure you are on `main`, then pull the code manually and run the production upgrade):
+Upgrade to the latest version (make sure you are on `main`):
 
 ```bash
 git pull
 ./scripts/upgrade.sh
 ```
 
-The script deploys the current working tree without pulling code or switching branches, and requires a clean working tree by default.
-It checks the database for pending migrations to decide whether a rehearsal is needed.
-After building and any required rehearsal, it stops Beat, lets both workers finish in-flight tasks,
-and stops Django last. HTTP remains available while workers drain; asynchronous tasks stay queued
-until the new workers resume. All old application processes stop before production migrations begin.
-Once production migrations and initialization finish, it starts Django, the workers, and Caddy.
-It checks `/health` through Caddy and verifies both workers' main and periodic queue subscriptions before starting Beat.
-Success then requires fresh heartbeat messages published after the final check starts and executed by both worker pools.
-This service switch also runs when there are no pending migrations.
-Each readiness phase has a 360-second timeout, configurable with `APP_READY_TIMEOUT`.
-A failed check exits nonzero. Beat stays stopped if the first check fails and is stopped if the final scheduling check fails;
-application processes remain available for diagnosis. These checks cover the local HTTP and task pipeline;
-external monitoring must still cover public TLS and chain RPC health.
+The script builds images, rehearses migrations when needed, drains the old services, runs production migrations and starts the new version, reporting success only after every readiness check passes. On failure it exits nonzero and leaves the services in place for diagnosis. It requires a clean working tree; each readiness wait defaults to 360 seconds and can be changed with `APP_READY_TIMEOUT`.
 
-Production migrations, reference data, and administrator initialization run sequentially in one temporary
-container and one Django process. Even an empty migration plan still runs migrate to maintain database
-triggers through post_migrate. A dedicated initialization failure exit code distinguishes failure after
-migrations from migration failure; interruptions with unknown migration completion never trigger recovery.
-Only after initialization succeeds does a temporary Compose override start Django
-with `/start --prepared`, avoiding duplicate initialization. Ordinary `docker compose up -d` still uses
-`/start` to initialize a fresh deployment without changes to `.env`.
-Failed initialization is retried once; a second failure leaves application services stopped.
-Failed production migrations never trigger automatic service recovery.
-Readiness checks execute inside the Django container instead of creating extra containers.
-Logs include total elapsed time and major stage durations. The first successful HTTP probe reports time
-since Django stop was requested, including shutdown and probe overhead rather than exact outage duration.
-Readiness progress is printed when the state changes and every ten seconds while unchanged.
-After HTTP recovers, full readiness may still wait for the next 30-second Beat heartbeat cycle and its
-execution receipts; that remaining wait is separate from HTTP downtime.
+### External monitoring
 
-Normal worker shutdown uses Celery warm shutdown: idle workers exit immediately, while running tasks finish.
-The 330-second container grace period covers the current longest production task's 290-second hard limit plus cleanup.
-This is an upper bound, not a fixed delay. Revisit the shutdown budget and monitoring window when adding longer tasks.
-
-Django, both workers, and Beat share the local `xcash-app:local` image (prefixed with the Compose project
-name when customized). Only Django defines the application build; Caddy is built separately.
-A full `docker compose up -d` builds missing images for a fresh deployment. Before starting a worker alone,
-run `docker compose build django`. The upgrade script builds both application and Caddy images automatically.
-Python dependencies and source code use separate layers, so source-only edits reuse dependency installation
-and the `.venv` copy layer, reducing image export and unpacking overhead.
-
-Local image builds recursively exclude `.env*`, backups, and the local mainnet deployment directory.
-Inject runtime secrets through `env_file`. Keep custom environment files with other names outside the build context,
-or explicitly exclude them in `.dockerignore`.
-
-Each Celery worker service currently runs one container, named `xcash_worker` and `xcash_worker_scan`.
-Adjust concurrency through the `PERFORMANCE` tier. To use `--scale` in the future, first remove
-`container_name` from the corresponding worker service. Beat must remain a single instance.
-
-### External health monitoring
-
-The admin operational inspection page, dashboard attention items, and sidebar badge use the same worker heartbeat
-status, checked when the page is opened. Continuous detection and proactive notifications require an independent
-external monitor, including when the admin site itself is unavailable.
-
-Monitor all three unauthenticated endpoints and alert on non-200 responses or timeouts.
-Responses contain only `status`; diagnostic details go to structured logs.
+The admin operational inspection page checks scanning and worker status live whenever it is opened. To get alerts while nobody is watching the admin panel, point an uptime monitor at these unauthenticated endpoints in production and alert on non-200 responses or timeouts:
 
 | Endpoint | Checks |
 | --- | --- |
-| `GET /health` | HTTP serving, PostgreSQL queries, and Redis read/write availability |
-| `GET /health/scanning` | Active-chain scan progress and scan errors |
-| `GET /health/workers` | Fresh scheduling and execution heartbeats from both worker pools |
+| `GET /health` | Service is up, PostgreSQL is queryable, Redis is readable and writable |
+| `GET /health/scanning` | Every active chain's scan keeps advancing without persistent errors |
+| `GET /health/workers` | Both worker pools have fresh scheduling and execution heartbeats |
 
-Beat publishes a heartbeat per worker group every 30 seconds. Each uses a coalesced periodic queue, so at most one
-message remains queued even if a worker is down. The HTTP endpoint only reads cached receipts; it neither calls
-`inspect` nor publishes tasks. Missing receipts, publication or execution older than 360 seconds, and cache failures
-return 503. Old queued messages cannot mask a stopped Beat. Startup remains unhealthy until both pools execute
-a heartbeat, including deployments with no active chains. Configure consecutive-failure thresholds in the monitor.
-Heartbeats verify scheduling and execution capacity, not transaction outcomes or Webhook delivery success.
+`/health/scanning` reacts to a single RPC hiccup, so configure a consecutive-failure threshold in your monitor. Right after first startup, `/health/workers` returns 503 until both worker pools run a heartbeat; that is expected.
 
 ## Tech stack
 
