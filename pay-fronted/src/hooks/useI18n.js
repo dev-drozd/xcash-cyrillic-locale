@@ -1,23 +1,34 @@
 import { useState, useEffect } from "react"
 import en from "@/locales/en.json"
 import zh from "@/locales/zh.json"
+import ru from "@/locales/ru.json"
 
 const translations = {
   en,
   zh,
+  ru,
   "zh-CN": zh,
   "zh-TW": zh,
   "zh-HK": zh,
 }
 
-const SUPPORTED = ["en", "zh"]
+const SUPPORTED = ["en", "zh", "ru"]
 const STORAGE_KEY = "xcash-locale"
 const CHANGE_EVENT = "xcash-locale-change"
 
+/** Metadata for each supported locale — used by the language selector dropdown. */
+export const SUPPORTED_LOCALES = [
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "zh", label: "中文",    flag: "🇨🇳" },
+  { code: "ru", label: "Русский", flag: "🇷🇺" },
+]
+
 function normalize(lang) {
   if (!lang) return "en"
-  const code = lang.split("-")[0]
-  return code === "zh" ? "zh" : "en"
+  const code = lang.split("-")[0].toLowerCase()
+  if (SUPPORTED.includes(code)) return code
+  // fallback: en
+  return "en"
 }
 
 function detectInitialLocale() {
