@@ -22,7 +22,7 @@
 <p>
   <a href="#быстрый-старт">Быстрый старт</a> ·
   <a href="https://xca.sh/docs/">Документация</a> ·
-  <a href="API.md">Справочник API</a> ·
+  <a href="API.ru.md">Справочник API</a> ·
   <a href="https://xca.sh">Сайт</a>
 </p>
 
